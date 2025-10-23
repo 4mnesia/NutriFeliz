@@ -10,11 +10,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -55,6 +57,7 @@ import com.example.nutriapp.repository.RegistrationResult
 import com.example.nutriapp.ui.navigation.NavItem
 import com.example.nutriapp.util.PasswordStrength
 import com.example.nutriapp.viewmodel.RegistrationViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun RegistrationScreen(
@@ -73,6 +76,7 @@ fun RegistrationScreen(
 
     LaunchedEffect(uiState.registrationResult) {
         if (uiState.registrationResult == RegistrationResult.SUCCESS) {
+            delay(2000) // Espera 2 segundos
             navController.navigate(NavItem.Login.route) {
                 popUpTo(NavItem.Login.route) { inclusive = true }
             }
@@ -108,20 +112,6 @@ fun RegistrationScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-
-                if (uiState.registrationResult != null && uiState.registrationResult != RegistrationResult.SUCCESS) {
-                    val errorMessage = when (uiState.registrationResult) {
-                        RegistrationResult.USERNAME_EXISTS -> "El nombre de usuario ya existe."
-                        RegistrationResult.EMAIL_EXISTS -> "El correo electrónico ya está en uso."
-                        else -> "Ocurrió un error inesperado."
-                    }
-                    Text(
-                        text = errorMessage,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                }
                 
                 AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 200)) + fadeIn(tween(1000, 200))) {
                     OutlinedTextField(
@@ -182,7 +172,10 @@ fun RegistrationScreen(
                         }
                     )
                 }
-                PasswordStrengthIndicator(strength = uiState.passwordStrength)
+                if (uiState.password.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    PasswordStrengthIndicator(strength = uiState.passwordStrength)
+                }
                 Spacer(modifier = Modifier.height(8.dp))
 
                 AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 1000)) + fadeIn(tween(1000, 1000))) {
@@ -209,6 +202,25 @@ fun RegistrationScreen(
                         Text(text = "Registrarse")
                     }
                 }
+                
+                if (uiState.registrationResult != null) {
+                    val message = when (uiState.registrationResult) {
+                        RegistrationResult.SUCCESS -> "¡Se ha registrado con éxito! Redirigiendo..."
+                        RegistrationResult.USERNAME_EXISTS -> "Error: El nombre de usuario ya existe."
+                        RegistrationResult.EMAIL_EXISTS -> "Error: El correo electrónico ya está en uso."
+                        RegistrationResult.FAILED -> "Error: No se pudo completar el registro."
+                        else -> ""
+                    }
+                    val color = if (uiState.registrationResult == RegistrationResult.SUCCESS) Color(0xFF00C853) else MaterialTheme.colorScheme.error
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = message,
+                        color = color,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 AnimatedVisibility(visible = startAnimation, enter = fadeIn(tween(1000, 1400))) {
@@ -226,11 +238,11 @@ fun RegistrationScreen(
 
 @Composable
 fun PasswordStrengthIndicator(strength: PasswordStrength) {
-    val (targetColor, targetProgress) = when (strength) {
-        PasswordStrength.WEAK -> Pair(Color.Red, 0.25f)
-        PasswordStrength.MEDIUM -> Pair(Color.Yellow, 0.5f)
-        PasswordStrength.STRONG -> Pair(Color(0xFF00F59B), 0.75f)
-        PasswordStrength.VERY_STRONG -> Pair(Color.Green, 1f)
+    val (strengthText, targetColor, targetProgress) = when (strength) {
+        PasswordStrength.WEAK -> Triple("Débil", Color.Red, 0.25f)
+        PasswordStrength.MEDIUM -> Triple("Media", Color.Yellow, 0.5f)
+        PasswordStrength.STRONG -> Triple("Fuerte", Color(0xFF00F59B), 0.75f)
+        PasswordStrength.VERY_STRONG -> Triple("Muy Fuerte", Color.Green, 1f)
     }
 
     val animatedProgress by animateFloatAsState(
@@ -244,16 +256,22 @@ fun PasswordStrengthIndicator(strength: PasswordStrength) {
         label = "Password Strength Color"
     )
 
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Spacer(modifier = Modifier.height(4.dp))
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         LinearProgressIndicator(
             progress = { animatedProgress },
             modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp)
-                .clip(RoundedCornerShape(4.dp)),
+                .weight(1f)
+                .height(6.dp)
+                .clip(RoundedCornerShape(3.dp)),
             color = animatedColor,
             trackColor = MaterialTheme.colorScheme.background
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = strengthText,
+            color = animatedColor,
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Bold
         )
     }
 }
