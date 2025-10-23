@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,7 +49,6 @@ import com.example.nutriapp.R
 import com.example.nutriapp.ui.navigation.NavItem
 import com.example.nutriapp.viewmodel.LoginStatus
 import com.example.nutriapp.viewmodel.LoginViewModel
-import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(
@@ -70,6 +70,8 @@ fun LoginScreen(
                 navController.navigate(NavItem.TransicionLogin.route + "/${user.username}") {
                     popUpTo(NavItem.Login.route) { inclusive = true }
                 }
+                // Resetea el estado después de navegar para evitar bucles
+                loginViewModel.onNavigationHandled()
             }
         }
     }
@@ -89,7 +91,6 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Animaciones escalonadas para cada elemento
             AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000)) + fadeIn(animationSpec = tween(1000))) {
                 Image(
                     painter = painterResource(id = R.drawable.nutrialogo),
@@ -99,7 +100,7 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 200)) + fadeIn(animationSpec = tween(1000, 200))) {
+            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 200)) + fadeIn(tween(1000, 200))) {
                 Text(
                     text = "Bienvenido a NutriAPP",
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
@@ -108,7 +109,7 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier.height(4.dp))
 
-            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 400)) + fadeIn(animationSpec = tween(1000, 400))) {
+            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 400)) + fadeIn(tween(1000, 400))) {
                 Text(
                     text = "Inicia tu sesion",
                     style = MaterialTheme.typography.bodyLarge,
@@ -127,7 +128,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 600)) + fadeIn(animationSpec = tween(1000, 600))) {
+            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 600)) + fadeIn(tween(1000, 600))) {
                 OutlinedTextField(
                     value = uiState.usernameOrEmail,
                     onValueChange = loginViewModel::onUsernameOrEmailChange,
@@ -138,7 +139,7 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier.height(4.dp))
 
-            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 800)) + fadeIn(animationSpec = tween(1000, 800))) {
+            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 800)) + fadeIn(tween(1000, 800))) {
                 OutlinedTextField(
                     value = uiState.password,
                     onValueChange = loginViewModel::onPasswordChange,
@@ -157,7 +158,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 1000)) + fadeIn(animationSpec = tween(1000, 1000))) {
+            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 1000)) + fadeIn(tween(1000, 1000))) {
                 Row(horizontalArrangement = Arrangement.Center) {
                     Button(
                         onClick = loginViewModel::login,

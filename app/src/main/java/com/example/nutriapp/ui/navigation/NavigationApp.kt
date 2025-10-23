@@ -21,6 +21,7 @@ fun NavigationApp() {
     NavHost(
         navController = navController, 
         startDestination = NavItem.Login.route,
+        // Animaciones para entrar y salir de las pantallas
         enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
         exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
     ) {

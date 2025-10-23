@@ -33,13 +33,16 @@ class LoginViewModel : ViewModel() {
         _uiState.update { it.copy(password = value, loginStatus = LoginStatus.IDLE) }
     }
 
+    fun onNavigationHandled() {
+        _uiState.update { it.copy(loginStatus = LoginStatus.IDLE) }
+    }
+
     fun login() {
         viewModelScope.launch {
             _uiState.update { it.copy(loginStatus = LoginStatus.LOADING) }
             val state = _uiState.value
             val user = UserRepository.findUser(state.usernameOrEmail, state.password)
             if (user != null) {
-                // Pequeña pausa para mostrar el mensaje de éxito
                 delay(500)
                 _uiState.update { it.copy(loginStatus = LoginStatus.SUCCESS, loggedInUser = user) }
             } else {

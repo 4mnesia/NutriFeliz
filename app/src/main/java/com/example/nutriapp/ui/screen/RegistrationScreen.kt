@@ -195,3 +195,37 @@ fun RegistrationScreen(
         }
     }
 }
+
+@Composable
+fun PasswordStrengthIndicator(strength: PasswordStrength) {
+    val (targetColor, targetProgress) = when (strength) {
+        PasswordStrength.WEAK -> Pair(Color.Red, 0.25f)
+        PasswordStrength.MEDIUM -> Pair(Color.Yellow, 0.5f)
+        PasswordStrength.STRONG -> Pair(Color(0xFF00F59B), 0.75f) // A nice green
+        PasswordStrength.VERY_STRONG -> Pair(Color.Green, 1f)
+    }
+
+    val animatedProgress by animateFloatAsState(
+        targetValue = targetProgress,
+        animationSpec = tween(durationMillis = 500),
+        label = "Password Strength Progress"
+    )
+    val animatedColor by animateColorAsState(
+        targetValue = targetColor,
+        animationSpec = tween(durationMillis = 500),
+        label = "Password Strength Color"
+    )
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(4.dp))
+        LinearProgressIndicator(
+            progress = animatedProgress, // CORREGIDO: Se pasa el valor directamente
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+                .clip(RoundedCornerShape(4.dp)),
+            color = animatedColor,
+            trackColor = MaterialTheme.colorScheme.background
+        )
+    }
+}
