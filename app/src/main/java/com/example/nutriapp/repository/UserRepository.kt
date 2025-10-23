@@ -3,6 +3,13 @@ package com.example.nutriapp.repository
 import androidx.compose.runtime.mutableStateListOf
 import com.example.nutriapp.model.User
 
+enum class RegistrationResult {
+    SUCCESS,
+    USERNAME_EXISTS,
+    EMAIL_EXISTS,
+    FAILED // Error genérico
+}
+
 object UserRepository {
     private val initialUsers = listOf(
         User(
@@ -15,12 +22,17 @@ object UserRepository {
 
     private val users = mutableStateListOf<User>(*initialUsers.toTypedArray())
 
-    fun addUser(user: User): Boolean {
-        return if (users.none { it.username.equals(user.username, ignoreCase = true) || it.email.equals(user.email, ignoreCase = true) }) {
-            users.add(user)
-            true
+    fun addUser(user: User): RegistrationResult {
+        if (users.any { it.username.equals(user.username, ignoreCase = true) }) {
+            return RegistrationResult.USERNAME_EXISTS
+        }
+        if (users.any { it.email.equals(user.email, ignoreCase = true) }) {
+            return RegistrationResult.EMAIL_EXISTS
+        }
+        return if (users.add(user)) {
+            RegistrationResult.SUCCESS
         } else {
-            false
+            RegistrationResult.FAILED
         }
     }
 

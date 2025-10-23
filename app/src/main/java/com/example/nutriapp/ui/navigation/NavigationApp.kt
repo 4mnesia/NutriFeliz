@@ -38,8 +38,13 @@ fun NavigationApp() {
             val username = backStackEntry.arguments?.getString("username") ?: "Usuario"
             TransicionLogin(navController = navController, username = username)
         }
-        composable(NavItem.Home.route) {
-            HomeScreen(navController = navController)
+        composable(
+            // CORREGIDO: La HomeScreen también necesita recibir el username
+            route = NavItem.Home.route + "/{username}",
+            arguments = listOf(navArgument("username") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val username = backStackEntry.arguments?.getString("username") ?: "Usuario"
+            HomeScreen(navController = navController, username = username)
         }
     }
 }
