@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.sp
 fun HomeScreen(modifier: Modifier = Modifier) {
     Column (
         modifier = modifier.fillMaxSize()
-            .background(Color(0xFFFD0303)),
+            .background(Color(0xFF130c27)),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
