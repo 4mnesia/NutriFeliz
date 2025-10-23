@@ -1,11 +1,13 @@
 package com.example.nutriapp.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -53,9 +55,13 @@ fun RegistrationScreen(
     registrationViewModel: RegistrationViewModel = viewModel()
 ) {
     val uiState by registrationViewModel.uiState.collectAsState()
-
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+    var startAnimation by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        startAnimation = true
+    }
 
     LaunchedEffect(uiState.registrationSuccess) {
         if (uiState.registrationSuccess) {
@@ -85,108 +91,107 @@ fun RegistrationScreen(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Crea tu cuenta",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = uiState.fullName,
-                    onValueChange = registrationViewModel::onFullNameChange,
-                    label = { Text(text = "Nombre Completo") },
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = uiState.username,
-                    onValueChange = registrationViewModel::onUsernameChange,
-                    label = { Text(text = "Nombre de Usuario") },
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = uiState.email,
-                    onValueChange = registrationViewModel::onEmailChange,
-                    label = { Text(text = "Tu email") },
-                    isError = !uiState.isEmailValid && uiState.email.isNotEmpty(),
-                    supportingText = { if (!uiState.isEmailValid && uiState.email.isNotEmpty()) Text("Formato de email no válido") },
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = uiState.password,
-                    onValueChange = registrationViewModel::onPasswordChange,
-                    label = { Text(text = "Contraseña") },
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(imageVector = image, contentDescription = "Toggle password visibility")
-                        }
-                    }
-                )
-                PasswordStrengthIndicator(strength = uiState.passwordStrength)
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    value = uiState.confirmPassword,
-                    onValueChange = registrationViewModel::onConfirmPasswordChange,
-                    label = { Text(text = "Confirmar Contraseña") },
-                    isError = !uiState.passwordsMatch && uiState.confirmPassword.isNotEmpty(),
-                    supportingText = { if (!uiState.passwordsMatch && uiState.confirmPassword.isNotEmpty()) Text("Las contraseñas no coinciden") },
-                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                        IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                            Icon(imageVector = image, contentDescription = "Toggle password visibility")
-                        }
-                    }
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = registrationViewModel::registerUser,
-                    enabled = uiState.isFormValid
-                ) {
-                    Text(text = "Registrarse")
+                AnimatedVisibility(visible = startAnimation, enter = fadeIn(tween(1000))) {
+                    Text(
+                        text = "Crea tu cuenta",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "¿Ya tienes una cuenta? Inicia sesión",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.clickable { navController.popBackStack() }
-                )
+                
+                AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 200)) + fadeIn(tween(1000, 200))) {
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = uiState.fullName,
+                        onValueChange = registrationViewModel::onFullNameChange,
+                        label = { Text(text = "Nombre Completo") },
+                        singleLine = true
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 400)) + fadeIn(tween(1000, 400))) {
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = uiState.username,
+                        onValueChange = registrationViewModel::onUsernameChange,
+                        label = { Text(text = "Nombre de Usuario") },
+                        singleLine = true
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 600)) + fadeIn(tween(1000, 600))) {
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = uiState.email,
+                        onValueChange = registrationViewModel::onEmailChange,
+                        label = { Text(text = "Tu email") },
+                        isError = !uiState.isEmailValid && uiState.email.isNotEmpty(),
+                        supportingText = { if (!uiState.isEmailValid && uiState.email.isNotEmpty()) Text("Formato de email no válido") },
+                        singleLine = true
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 800)) + fadeIn(tween(1000, 800))) {
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = uiState.password,
+                        onValueChange = registrationViewModel::onPasswordChange,
+                        label = { Text(text = "Contraseña") },
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(imageVector = image, contentDescription = "Toggle password visibility")
+                            }
+                        }
+                    )
+                }
+                PasswordStrengthIndicator(strength = uiState.passwordStrength)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 1000)) + fadeIn(tween(1000, 1000))) {
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        value = uiState.confirmPassword,
+                        onValueChange = registrationViewModel::onConfirmPasswordChange,
+                        label = { Text(text = "Confirmar Contraseña") },
+                        isError = !uiState.passwordsMatch && uiState.confirmPassword.isNotEmpty(),
+                        supportingText = { if (!uiState.passwordsMatch && uiState.confirmPassword.isNotEmpty()) Text("Las contraseñas no coinciden") },
+                        visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                Icon(imageVector = image, contentDescription = "Toggle password visibility")
+                            }
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+
+                AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 1200)) + fadeIn(tween(1000, 1200))) {
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = registrationViewModel::registerUser,
+                        enabled = uiState.isFormValid
+                    ) {
+                        Text(text = "Registrarse")
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                AnimatedVisibility(visible = startAnimation, enter = fadeIn(tween(1000, 1400))) {
+                    Text(
+                        text = "¿Ya tienes una cuenta? Inicia sesión",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.clickable { navController.popBackStack() }
+                    )
+                }
             }
         }
-    }
-}
-
-@Composable
-fun PasswordStrengthIndicator(strength: PasswordStrength) {
-    val (targetColor, targetProgress) = when (strength) {
-        PasswordStrength.WEAK -> Pair(Color.Red, 0.25f)
-        PasswordStrength.MEDIUM -> Pair(Color.Yellow, 0.5f)
-        PasswordStrength.STRONG -> Pair(Color(0xFF00F59B), 0.75f)
-        PasswordStrength.VERY_STRONG -> Pair(Color.Green, 1f)
-    }
-
-    val animatedProgress by animateFloatAsState(targetValue = targetProgress, animationSpec = tween(500), label = "")
-    val animatedColor by animateColorAsState(targetValue = targetColor, animationSpec = tween(500), label = "")
-
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Spacer(modifier = Modifier.height(4.dp))
-        LinearProgressIndicator(
-            progress = { animatedProgress },
-            modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-            color = animatedColor,
-            trackColor = MaterialTheme.colorScheme.background
-        )
     }
 }

@@ -1,5 +1,8 @@
 package com.example.nutriapp.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -15,7 +18,12 @@ import com.example.nutriapp.ui.screen.TransicionLogin
 fun NavigationApp() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = NavItem.Login.route) {
+    NavHost(
+        navController = navController, 
+        startDestination = NavItem.Login.route,
+        enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
+        exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
+    ) {
         composable(NavItem.Login.route) {
             LoginScreen(navController = navController)
         }

@@ -48,6 +48,7 @@ import com.example.nutriapp.R
 import com.example.nutriapp.ui.navigation.NavItem
 import com.example.nutriapp.viewmodel.LoginStatus
 import com.example.nutriapp.viewmodel.LoginViewModel
+import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(
@@ -56,18 +57,16 @@ fun LoginScreen(
 ) {
     val uiState by loginViewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
-    var isVisible by remember { mutableStateOf(false) }
+    var startAnimation by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        isVisible = true
+        startAnimation = true
     }
 
-    // Observa el estado del login para navegar cuando sea exitoso
     LaunchedEffect(uiState.loginStatus) {
         if (uiState.loginStatus == LoginStatus.SUCCESS) {
             val user = uiState.loggedInUser
             if (user != null) {
-                // Navega a la pantalla de transición, no a la de Home directamente
                 navController.navigate(NavItem.TransicionLogin.route + "/${user.username}") {
                     popUpTo(NavItem.Login.route) { inclusive = true }
                 }
@@ -82,59 +81,64 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn(animationSpec = tween(durationMillis = 1000)) +
-                    slideInVertically(initialOffsetY = { it / 2 }, animationSpec = tween(durationMillis = 1000))
+        Column(
+            modifier = Modifier
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
+            // Animaciones escalonadas para cada elemento
+            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000)) + fadeIn(animationSpec = tween(1000))) {
                 Image(
                     painter = painterResource(id = R.drawable.nutrialogo),
                     contentDescription = "Login Image",
                     modifier = Modifier.size(150.dp)
                 )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
 
+            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 200)) + fadeIn(animationSpec = tween(1000, 200))) {
                 Text(
                     text = "Bienvenido a NutriAPP",
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface
                 )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
 
-                Spacer(modifier = Modifier.height(4.dp))
-
+            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 400)) + fadeIn(animationSpec = tween(1000, 400))) {
                 Text(
                     text = "Inicia tu sesion",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.secondary
                 )
+            }
 
-                if (uiState.loginStatus == LoginStatus.SUCCESS || uiState.loginStatus == LoginStatus.ERROR) {
-                    val message = if (uiState.loginStatus == LoginStatus.SUCCESS) "¡Inicio de sesión exitoso!" else "Usuario o contraseña incorrectos"
-                    val color = if (uiState.loginStatus == LoginStatus.SUCCESS) Color(0xFF00C853) else MaterialTheme.colorScheme.error
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = message,
-                        color = color,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+            if (uiState.loginStatus == LoginStatus.ERROR) {
+                Text(
+                    text = "Usuario o contraseña incorrectos",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
+            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 600)) + fadeIn(animationSpec = tween(1000, 600))) {
                 OutlinedTextField(
                     value = uiState.usernameOrEmail,
                     onValueChange = loginViewModel::onUsernameOrEmailChange,
                     label = { Text(text = "Email o Usuario") },
-                    isError = uiState.loginStatus == LoginStatus.ERROR
+                    isError = uiState.loginStatus == LoginStatus.ERROR,
+                    modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+
+            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 800)) + fadeIn(animationSpec = tween(1000, 800))) {
                 OutlinedTextField(
                     value = uiState.password,
                     onValueChange = loginViewModel::onPasswordChange,
@@ -146,15 +150,19 @@ fun LoginScreen(
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(imageVector = image, contentDescription = "Toggle password visibility")
                         }
-                    }
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 )
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
+            AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 1000)) + fadeIn(animationSpec = tween(1000, 1000))) {
                 Row(horizontalArrangement = Arrangement.Center) {
                     Button(
                         onClick = loginViewModel::login,
-                        enabled = uiState.loginStatus != LoginStatus.LOADING
+                        enabled = uiState.loginStatus != LoginStatus.LOADING,
+                        modifier = Modifier.weight(1f)
                     ) {
                         if (uiState.loginStatus == LoginStatus.LOADING) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
@@ -165,6 +173,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                     Button(
                         onClick = { navController.navigate(NavItem.Registration.route) },
+                        modifier = Modifier.weight(1f)
                     ) {
                         Text(text = "Registrate")
                     }
