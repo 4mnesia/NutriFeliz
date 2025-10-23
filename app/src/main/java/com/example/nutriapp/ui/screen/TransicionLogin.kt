@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,10 +26,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.nutriapp.R
 import com.example.nutriapp.ui.navigation.NavItem
 import kotlinx.coroutines.delay
 
@@ -54,9 +58,12 @@ fun TransicionLogin(navController: NavController, username: String) {
         showContent = true
         delay(4000)
 
-
+        // Navega a la HomeScreen y limpia la pila de navegación hasta el Login
         navController.navigate(NavItem.Home.route) {
-            popUpTo(NavItem.TransicionLogin.route) { inclusive = true }
+            popUpTo(NavItem.Login.route) {
+                inclusive = true // También elimina Login de la pila
+            }
+            launchSingleTop = true // Evita múltiples copias de HomeScreen
         }
     }
 
@@ -91,6 +98,12 @@ fun TransicionLogin(navController: NavController, username: String) {
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.secondary
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+                Image(
+                    painter = painterResource(id = R.drawable.nutriaidea),
+                    contentDescription = "Nutria Idea",
+                    modifier = Modifier.size(150.dp)
                 )
             }
         }

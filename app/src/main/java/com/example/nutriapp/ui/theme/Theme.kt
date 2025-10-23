@@ -21,7 +21,7 @@ fun NutriAppTheme(
 ) {
     MaterialTheme(
         colorScheme = DarkColorScheme,
-        typography = Typography, // Corregido: Usamos el objeto Typography, no la familia de fuentes Inter
+        typography = Typography,
         content = content
     )
 }

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,10 +28,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,26 +42,37 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.nutriapp.R
-import com.example.nutriapp.data.UserRepository
 import com.example.nutriapp.ui.navigation.NavItem
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-
-enum class LoginState { IDLE, SUCCESS, ERROR }
+import com.example.nutriapp.viewmodel.LoginStatus
+import com.example.nutriapp.viewmodel.LoginViewModel
 
 @Composable
-fun LoginScreen(navController: NavController) {
-    var usernameOrEmail by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+fun LoginScreen(
+    navController: NavController,
+    loginViewModel: LoginViewModel = viewModel()
+) {
+    val uiState by loginViewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
     var isVisible by remember { mutableStateOf(false) }
-    var loginState by remember { mutableStateOf(LoginState.IDLE) }
-    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         isVisible = true
+    }
+
+    // Observa el estado del login para navegar cuando sea exitoso
+    LaunchedEffect(uiState.loginStatus) {
+        if (uiState.loginStatus == LoginStatus.SUCCESS) {
+            val user = uiState.loggedInUser
+            if (user != null) {
+                // Navega a la pantalla de transición, no a la de Home directamente
+                navController.navigate(NavItem.TransicionLogin.route + "/${user.username}") {
+                    popUpTo(NavItem.Login.route) { inclusive = true }
+                }
+            }
+        }
     }
 
     Column(
@@ -103,9 +115,9 @@ fun LoginScreen(navController: NavController) {
                     color = MaterialTheme.colorScheme.secondary
                 )
 
-                if (loginState != LoginState.IDLE) {
-                    val message = if (loginState == LoginState.SUCCESS) "¡Inicio de sesión exitoso!" else "Usuario o contraseña incorrectos"
-                    val color = if (loginState == LoginState.SUCCESS) Color(0xFF00C853) else MaterialTheme.colorScheme.error
+                if (uiState.loginStatus == LoginStatus.SUCCESS || uiState.loginStatus == LoginStatus.ERROR) {
+                    val message = if (uiState.loginStatus == LoginStatus.SUCCESS) "¡Inicio de sesión exitoso!" else "Usuario o contraseña incorrectos"
+                    val color = if (uiState.loginStatus == LoginStatus.SUCCESS) Color(0xFF00C853) else MaterialTheme.colorScheme.error
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = message,
@@ -117,23 +129,20 @@ fun LoginScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 OutlinedTextField(
-                    value = usernameOrEmail,
-                    onValueChange = { usernameOrEmail = it; loginState = LoginState.IDLE },
+                    value = uiState.usernameOrEmail,
+                    onValueChange = loginViewModel::onUsernameOrEmailChange,
                     label = { Text(text = "Email o Usuario") },
-                    isError = loginState == LoginState.ERROR
+                    isError = uiState.loginStatus == LoginStatus.ERROR
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it; loginState = LoginState.IDLE },
+                    value = uiState.password,
+                    onValueChange = loginViewModel::onPasswordChange,
                     label = { Text(text = "Contraseña") },
-                    isError = loginState == LoginState.ERROR,
+                    isError = uiState.loginStatus == LoginStatus.ERROR,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        val image = if (passwordVisible)
-                            Icons.Filled.Visibility
-                        else Icons.Filled.VisibilityOff
-
+                        val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(imageVector = image, contentDescription = "Toggle password visibility")
                         }
@@ -144,23 +153,14 @@ fun LoginScreen(navController: NavController) {
 
                 Row(horizontalArrangement = Arrangement.Center) {
                     Button(
-                        onClick = {
-                            if (loginState == LoginState.SUCCESS) return@Button
-                            coroutineScope.launch {
-                                val user = UserRepository.findUser(usernameOrEmail, password)
-                                if (user != null) {
-                                    loginState = LoginState.SUCCESS
-                                    delay(1000)
-                                    navController.navigate(NavItem.TransicionLogin.route + "/${user.username}") {
-                                        popUpTo(NavItem.Login.route) { inclusive = true }
-                                    }
-                                } else {
-                                    loginState = LoginState.ERROR
-                                }
-                            }
-                        },
+                        onClick = loginViewModel::login,
+                        enabled = uiState.loginStatus != LoginStatus.LOADING
                     ) {
-                        Text(text = "Iniciar Sesion")
+                        if (uiState.loginStatus == LoginStatus.LOADING) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                        } else {
+                            Text(text = "Iniciar Sesion")
+                        }
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Button(

@@ -1,6 +1,5 @@
 package com.example.nutriapp.ui.screen
 
-import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -29,6 +28,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,46 +41,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.nutriapp.data.User
-import com.example.nutriapp.data.UserRepository
 import com.example.nutriapp.ui.navigation.NavItem
 import com.example.nutriapp.util.PasswordStrength
-import com.example.nutriapp.util.calculatePasswordStrength
-import com.example.nutriapp.util.isEmailValid
+import com.example.nutriapp.viewmodel.RegistrationViewModel
 
 @Composable
-fun RegistrationScreen(navController: NavController) {
-    var fullName by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+fun RegistrationScreen(
+    navController: NavController,
+    registrationViewModel: RegistrationViewModel = viewModel()
+) {
+    val uiState by registrationViewModel.uiState.collectAsState()
 
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
-    var isEmailTouched by remember { mutableStateOf(false) }
-    var emailIsValid by remember { mutableStateOf(false) }
-    var passwordStrength by remember { mutableStateOf(PasswordStrength.WEAK) }
-    var passwordsMatch by remember { mutableStateOf(true) }
-
-    LaunchedEffect(email) {
-        if (isEmailTouched) {
-            emailIsValid = isEmailValid(email)
+    LaunchedEffect(uiState.registrationSuccess) {
+        if (uiState.registrationSuccess) {
+            navController.navigate(NavItem.Login.route) {
+                popUpTo(NavItem.Login.route) { inclusive = true }
+            }
         }
     }
-
-    LaunchedEffect(password) {
-        passwordStrength = calculatePasswordStrength(password)
-        passwordsMatch = password.isNotEmpty() && password == confirmPassword
-    }
-
-    LaunchedEffect(confirmPassword) {
-        passwordsMatch = password == confirmPassword
-    }
-
-    val isFormValid = emailIsValid && passwordsMatch && password.isNotEmpty() && fullName.isNotEmpty() && username.isNotEmpty() && passwordStrength != PasswordStrength.WEAK
 
     Box(
         modifier = Modifier
@@ -111,34 +94,34 @@ fun RegistrationScreen(navController: NavController) {
 
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
-                    value = fullName,
-                    onValueChange = { fullName = it },
+                    value = uiState.fullName,
+                    onValueChange = registrationViewModel::onFullNameChange,
                     label = { Text(text = "Nombre Completo") },
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
-                    value = username,
-                    onValueChange = { username = it },
+                    value = uiState.username,
+                    onValueChange = registrationViewModel::onUsernameChange,
                     label = { Text(text = "Nombre de Usuario") },
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
-                    value = email,
-                    onValueChange = { email = it; isEmailTouched = true },
+                    value = uiState.email,
+                    onValueChange = registrationViewModel::onEmailChange,
                     label = { Text(text = "Tu email") },
-                    isError = !emailIsValid && isEmailTouched && email.isNotEmpty(),
-                    supportingText = { if (!emailIsValid && isEmailTouched && email.isNotEmpty()) Text("Formato de email no válido") },
+                    isError = !uiState.isEmailValid && uiState.email.isNotEmpty(),
+                    supportingText = { if (!uiState.isEmailValid && uiState.email.isNotEmpty()) Text("Formato de email no válido") },
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
-                    value = password,
-                    onValueChange = { password = it },
+                    value = uiState.password,
+                    onValueChange = registrationViewModel::onPasswordChange,
                     label = { Text(text = "Contraseña") },
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -148,15 +131,15 @@ fun RegistrationScreen(navController: NavController) {
                         }
                     }
                 )
-                PasswordStrengthIndicator(strength = passwordStrength)
+                PasswordStrengthIndicator(strength = uiState.passwordStrength)
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),
-                    value = confirmPassword,
-                    onValueChange = { confirmPassword = it },
+                    value = uiState.confirmPassword,
+                    onValueChange = registrationViewModel::onConfirmPasswordChange,
                     label = { Text(text = "Confirmar Contraseña") },
-                    isError = !passwordsMatch && confirmPassword.isNotEmpty(),
-                    supportingText = { if (!passwordsMatch && confirmPassword.isNotEmpty()) Text("Las contraseñas no coinciden") },
+                    isError = !uiState.passwordsMatch && uiState.confirmPassword.isNotEmpty(),
+                    supportingText = { if (!uiState.passwordsMatch && uiState.confirmPassword.isNotEmpty()) Text("Las contraseñas no coinciden") },
                     visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
@@ -168,16 +151,8 @@ fun RegistrationScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
                     modifier = Modifier.fillMaxWidth(),
-                    onClick = {
-                        val newUser = User(fullName, username, email, password)
-                        UserRepository.addUser(newUser)
-                        Log.d("Registration", "User registered: $newUser")
-                        Log.d("Registration", "Current users: ${UserRepository.users}")
-                        navController.navigate(NavItem.Login.route) {
-                            popUpTo(NavItem.Login.route) { inclusive = true }
-                        }
-                    },
-                    enabled = isFormValid
+                    onClick = registrationViewModel::registerUser,
+                    enabled = uiState.isFormValid
                 ) {
                     Text(text = "Registrarse")
                 }
@@ -202,25 +177,14 @@ fun PasswordStrengthIndicator(strength: PasswordStrength) {
         PasswordStrength.VERY_STRONG -> Pair(Color.Green, 1f)
     }
 
-    val animatedProgress by animateFloatAsState(
-        targetValue = targetProgress,
-        animationSpec = tween(durationMillis = 500),
-        label = "Password Strength Progress"
-    )
-    val animatedColor by animateColorAsState(
-        targetValue = targetColor,
-        animationSpec = tween(durationMillis = 500),
-        label = "Password Strength Color"
-    )
+    val animatedProgress by animateFloatAsState(targetValue = targetProgress, animationSpec = tween(500), label = "")
+    val animatedColor by animateColorAsState(targetValue = targetColor, animationSpec = tween(500), label = "")
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Spacer(modifier = Modifier.height(4.dp))
         LinearProgressIndicator(
             progress = { animatedProgress },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp)
-                .clip(RoundedCornerShape(4.dp)),
+            modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
             color = animatedColor,
             trackColor = MaterialTheme.colorScheme.background
         )
