@@ -69,7 +69,7 @@ fun TransicionLogin(navController: NavController, username: String) {
         if (isLoading) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
-
+        
         AnimatedVisibility(
             visible = showContent,
             enter = fadeIn(animationSpec = tween(1000)) + slideInVertically(initialOffsetY = { it / 2 }, animationSpec = tween(1000)),
