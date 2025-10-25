@@ -2,9 +2,11 @@ package com.example.nutriapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFAA6FFF)
-val Pink80 = Color(0xFFEFB8C8)
+val Purple = Color(0xFF251740)
+val PurpleGrey80 = Color(0xFFA580DA)
+val white = Color(0xFFffffff)
+
+val Purple40 = Color(0xFFc4b5fd)
 
 val Buttons = Color(0xFF997EE6)
 
