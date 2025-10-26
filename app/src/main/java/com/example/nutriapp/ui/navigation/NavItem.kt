@@ -5,4 +5,5 @@ sealed class NavItem(val route: String) {
     object Registration : NavItem("registration")
     object TransicionLogin : NavItem("transicion_login")
     object Home : NavItem("home")
+    object Settings : NavItem("settings")
 }

@@ -12,16 +12,21 @@ import androidx.navigation.navArgument
 import com.example.nutriapp.ui.screen.HomeScreen
 import com.example.nutriapp.ui.screen.LoginScreen
 import com.example.nutriapp.ui.screen.RegistrationScreen
+import com.example.nutriapp.ui.screen.SettingsScreen
 import com.example.nutriapp.ui.screen.TransicionLogin
+import com.example.nutriapp.ui.theme.ColorProfile
 
 @Composable
-fun NavigationApp() {
+fun NavigationApp(
+    toggleTheme: () -> Unit,
+    colorProfile: ColorProfile,
+    setColorProfile: (ColorProfile) -> Unit
+) {
     val navController = rememberNavController()
 
     NavHost(
         navController = navController, 
         startDestination = NavItem.Login.route,
-        // Animaciones para entrar y salir de las pantallas
         enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
         exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
     ) {
@@ -39,12 +44,18 @@ fun NavigationApp() {
             TransicionLogin(navController = navController, username = username)
         }
         composable(
-            // CORREGIDO: La HomeScreen también necesita recibir el username
             route = NavItem.Home.route + "/{username}",
             arguments = listOf(navArgument("username") { type = NavType.StringType })
         ) { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: "Usuario"
-            HomeScreen(navController = navController, username = username)
+            HomeScreen(navController = navController, username = username, toggleTheme = toggleTheme)
+        }
+        composable(NavItem.Settings.route) {
+            SettingsScreen(
+                navController = navController,
+                colorProfile = colorProfile,
+                setColorProfile = setColorProfile
+            )
         }
     }
 }

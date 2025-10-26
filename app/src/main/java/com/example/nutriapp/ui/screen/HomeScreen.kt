@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.KebabDining
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.Nightlight
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -52,6 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.nutriapp.ui.navigation.NavItem
 import com.example.nutriapp.viewmodel.CalorieStatus
 import com.example.nutriapp.viewmodel.HomeViewModel
 import com.example.nutriapp.viewmodel.MacroStatus
@@ -62,7 +64,8 @@ import com.example.nutriapp.viewmodel.ActivityStatus
 fun HomeScreen(
     navController: NavController,
     username: String,
-    homeViewModel: HomeViewModel = viewModel()
+    homeViewModel: HomeViewModel = viewModel(),
+    toggleTheme: () -> Unit
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
     
@@ -91,8 +94,11 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO: Toggle dark mode */ }) {
+                    IconButton(onClick = toggleTheme) {
                         Icon(Icons.Default.Nightlight, contentDescription = "Toggle Dark Mode")
+                    }
+                    IconButton(onClick = { navController.navigate(NavItem.Settings.route) }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
