@@ -15,3 +15,8 @@ val Content1 = Color(0xFF1a0f2e)
 
 val magent = Color(0xFFa748e3)
 val PurpleClare = Color(0xFF241146)
+val formColor = Color(0xFF291B44)
+val formColor2 = Color(0xFF835CB4)
+val barraStatuse = Color(0xFF3F2E65)
+
+val barraStatuse2 = Color(0xFFA78BFA)
