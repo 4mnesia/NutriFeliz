@@ -1,5 +1,7 @@
 package com.example.nutriapp.ui.theme
 
+import android.os.Build
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -20,6 +22,17 @@ private val PredeterminadoDarkColorScheme = darkColorScheme(
     onSurface = PredeterminadoOscuroOnBackground
 )
 
+private val DarkColorScheme = darkColorScheme(
+    primary = Purple,
+    secondary = Border,
+    tertiary = white,
+    onBackground = Purple40,
+    background = Content1,
+    surface = magent,
+    onSurface = Buttons,
+    onSecondary = formColor,
+    onTertiary = barraStatuse,
+    onTertiaryContainer= barraStatuse2
 private val PredeterminadoLightColorScheme = lightColorScheme(
     primary = PredeterminadoClaroPrimary,
     secondary = PredeterminadoClaroSecondary,
@@ -29,6 +42,17 @@ private val PredeterminadoLightColorScheme = lightColorScheme(
     onSurface = PredeterminadoClaroOnBackground
 )
 
+private val LightColorScheme = lightColorScheme(
+    primary = Border,
+    secondary = Purple,
+    tertiary = Purple40,
+    onBackground = white,
+    background = PurpleGrey80,
+    surface = Content1,
+    onSurface = PurpleClare,
+    onSecondary = formColor2,
+    onTertiary = barraStatuse2,
+    onTertiaryContainer = barraStatuse
 // --- Perfil Rosa ---
 private val RosaDarkColorScheme = darkColorScheme(
     primary = RosaOscuroPrimary,
@@ -51,6 +75,8 @@ private val RosaLightColorScheme = lightColorScheme(
 fun NutriAppTheme(
     darkTheme: Boolean = true,
     colorProfile: ColorProfile = ColorProfile.PREDETERMINADO,
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when (colorProfile) {

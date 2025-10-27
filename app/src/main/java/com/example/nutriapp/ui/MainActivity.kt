@@ -10,11 +10,18 @@ import androidx.compose.runtime.setValue
 import com.example.nutriapp.ui.navigation.NavigationApp
 import com.example.nutriapp.ui.theme.ColorProfile
 import com.example.nutriapp.ui.theme.NutriAppTheme
+import com.example.nutriapp.ui.screen.home.HomeScreen
+import com.example.nutriapp.ui.screen.home.LoginScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            LoginScreen()
+            HomeScreen()
+                }
+            }
+        }
             var darkTheme by remember { mutableStateOf(true) }
             var colorProfile by remember { mutableStateOf(ColorProfile.PREDETERMINADO) }
 

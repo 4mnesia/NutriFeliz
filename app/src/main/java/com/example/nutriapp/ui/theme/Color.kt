@@ -1,6 +1,3 @@
-package com.example.nutriapp.ui.theme
-
-import androidx.compose.ui.graphics.Color
 
 // --- Perfil Predeterminado: Oscuro ---
 val PredeterminadoOscuroBackground = Color(0xFF130c27)
