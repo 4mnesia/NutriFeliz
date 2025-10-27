@@ -41,7 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -52,7 +51,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.nutriapp.R
 import com.example.nutriapp.ui.navigation.NavItem
-import com.example.nutriapp.ui.theme.home.NutriAppTheme
+import com.example.nutriapp.ui.theme.NutriAppTheme
 import com.example.nutriapp.viewmodel.LoginStatus
 import com.example.nutriapp.viewmodel.LoginViewModel
 

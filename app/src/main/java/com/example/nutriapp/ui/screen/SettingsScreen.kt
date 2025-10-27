@@ -27,7 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.nutriapp.ui.theme.home.ColorProfile
+import com.example.nutriapp.ui.theme.ColorProfile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,4 +1,4 @@
-package com.example.nutriapp.ui.screen.home
+package com.example.nutriapp.ui.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.nutriapp.ui.theme.home.NutriAppTheme
+import com.example.nutriapp.ui.theme.NutriAppTheme
 import com.example.nutriapp.viewmodel.home.HomeViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController

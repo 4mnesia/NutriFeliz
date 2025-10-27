@@ -1,4 +1,4 @@
-package com.example.nutriapp.ui.theme.home
+package com.example.nutriapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

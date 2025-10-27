@@ -1,4 +1,4 @@
-package com.example.nutriapp.ui.theme.home
+package com.example.nutriapp.ui.theme
 
 import android.app.Activity
 import android.os.Build

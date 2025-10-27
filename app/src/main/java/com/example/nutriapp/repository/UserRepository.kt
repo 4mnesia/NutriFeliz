@@ -7,7 +7,7 @@ enum class RegistrationResult {
     SUCCESS,
     USERNAME_EXISTS,
     EMAIL_EXISTS,
-    FAILED // Error genérico
+    FAILED
 }
 
 object UserRepository {
