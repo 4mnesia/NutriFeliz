@@ -1,4 +1,4 @@
-package com.example.nutriapp.ui.theme
+package com.example.nutriapp.ui.theme.home
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

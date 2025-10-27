@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.nutriapp.ui.theme.NutriAppTheme
+import com.example.nutriapp.ui.theme.home.NutriAppTheme
 import com.example.nutriapp.viewmodel.home.HomeViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutriapp.ui.component.home.*
