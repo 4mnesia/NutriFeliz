@@ -1,4 +1,4 @@
-package com.example.nutriapp.ui.screen
+package com.example.nutriapp.ui.screen.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
