@@ -37,6 +37,7 @@ import com.example.nutriapp.ui.navigation.BottomNavItem
 fun HomeScreen (
     navController: NavController,
     username: String,
+    toggleTheme: () -> Unit = {},
     homeViewModel: HomeViewModel = viewModel()
 ) {
     val uiState = homeViewModel.uiState
@@ -54,7 +55,7 @@ fun HomeScreen (
                     TopBar(
                         isClicked = uiState.esTemaOscuro,
                         user = username,
-                        onTheme = { homeViewModel.onThemeChange() })
+                        onTheme = toggleTheme)
                 },
                 bottomBar = {
                     NavigationBar(

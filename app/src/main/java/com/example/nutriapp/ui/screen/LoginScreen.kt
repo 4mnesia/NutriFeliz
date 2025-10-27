@@ -1,6 +1,7 @@
-package com.example.nutriapp.ui.screen.home
+package com.example.nutriapp.ui.screen
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -86,6 +87,7 @@ fun LoginScreen(
     ) {
         Column(
             modifier = Modifier
+                .animateContentSize(animationSpec = tween(durationMillis = 500))
                 .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(24.dp),
@@ -156,9 +158,7 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-
             Spacer(modifier = Modifier.height(16.dp))
-
             AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 1000)) + fadeIn(tween(1000, 1000))) {
                 Row(horizontalArrangement = Arrangement.Center) {
                     Button(
@@ -184,13 +184,16 @@ fun LoginScreen(
         }
     }
 }
-@Preview(name = "Login", showBackground = true)
+@Preview(name = "Login Screen Preview", showBackground = true)
 @Composable
-private fun LoginScreenPreview(loginViewModel: LoginViewModel = viewModel()) {
+private fun LoginScreenPreview() {
+
     NutriAppTheme {
         LoginScreen(
-            navController = rememberNavController(),
-            loginViewModel = loginViewModel
+            navController = rememberNavController()
         )
     }
 }
+
+
+

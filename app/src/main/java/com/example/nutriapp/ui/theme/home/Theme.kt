@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import androidx.compose.ui.graphics.Color
 
 enum class ColorProfile {
     PREDETERMINADO,
@@ -49,17 +50,15 @@ private val LightColorScheme = lightColorScheme(
     onTertiaryContainer = barraStatuse
     )
 
+@Suppress("DEPRECATION")
 @Composable
 fun NutriAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // CAMBIO 1: Añade el parámetro 'colorProfile'
     colorProfile: ColorProfile = ColorProfile.PREDETERMINADO,
-    // (Opcional) Soporte para colores dinámicos de Android 12+
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    // CAMBIO 2: Usa una estructura 'when' para seleccionar la paleta de colores
-    // correcta basándote en el 'colorProfile' y 'darkTheme'.
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
@@ -78,13 +77,13 @@ fun NutriAppTheme(
             else -> LightColorScheme
         }
     }
-
+    @Suppress("DEPRECATION")
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            window.statusBarColor = Color.Transparent.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 

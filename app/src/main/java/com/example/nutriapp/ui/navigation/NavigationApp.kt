@@ -8,13 +8,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.nutriapp.ui.screen.RegistrationScreen
 import com.example.nutriapp.ui.screen.SettingsScreen
 import com.example.nutriapp.ui.screen.TransicionLogin
 import com.example.nutriapp.ui.screen.home.HomeScreen
-import com.example.nutriapp.ui.screen.home.LoginScreen
+import com.example.nutriapp.ui.screen.LoginScreen
 import com.example.nutriapp.ui.theme.home.ColorProfile
 
 @Composable
@@ -48,7 +47,7 @@ fun NavigationApp(
             arguments = listOf(navArgument("username") { type = NavType.StringType })
         ) { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: "Usuario"
-            HomeScreen(navController = navController, username = username)
+            HomeScreen(navController = navController, username = username, toggleTheme = toggleTheme)
         }
         composable(NavItem.Settings.route) {
             SettingsScreen(
