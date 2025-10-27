@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(isClicked: Boolean,
+fun TopBar(isClicked: Boolean,user: String,
            onTheme: () -> Unit){
     val ternaryColor = MaterialTheme.colorScheme.tertiary
     val onBackgroundColor = MaterialTheme.colorScheme.onBackground
@@ -33,7 +33,7 @@ fun TopBar(isClicked: Boolean,
         title = {
             Column {
                 Text(text = "NutriTrack", color = ternaryColor)
-                Text(text = "Hola, ", color = onBackgroundColor)
+                Text(text = "Hola, $user", color = onBackgroundColor)
             }
         },
         actions = {

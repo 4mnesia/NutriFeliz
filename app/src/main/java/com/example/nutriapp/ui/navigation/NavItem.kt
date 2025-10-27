@@ -9,4 +9,4 @@ sealed class NavItem(val route: String) {
     object Home : NavItem("home")
     object Settings : NavItem("settings")
 }
-data class BottomNavItem(val label: String, val icon: ImageVector)
+data class BottomNavItem(val label: String, val icon: ImageVector, val route: String)

@@ -41,11 +41,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.nutriapp.R
 import com.example.nutriapp.ui.navigation.NavItem
+import com.example.nutriapp.ui.theme.home.NutriAppTheme
 import com.example.nutriapp.viewmodel.LoginStatus
 import com.example.nutriapp.viewmodel.LoginViewModel
 
@@ -69,7 +72,6 @@ fun LoginScreen(
                 navController.navigate(NavItem.TransicionLogin.route + "/${user.username}") {
                     popUpTo(NavItem.Login.route) { inclusive = true }
                 }
-                // Resetea el estado después de navegar para evitar bucles
                 loginViewModel.onNavigationHandled()
             }
         }
@@ -180,5 +182,15 @@ fun LoginScreen(
                 }
             }
         }
+    }
+}
+@Preview(name = "Login", showBackground = true)
+@Composable
+private fun LoginScreenPreview(loginViewModel: LoginViewModel = viewModel()) {
+    NutriAppTheme {
+        LoginScreen(
+            navController = rememberNavController(),
+            loginViewModel = loginViewModel
+        )
     }
 }

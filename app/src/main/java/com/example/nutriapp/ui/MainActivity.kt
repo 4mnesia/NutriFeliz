@@ -7,8 +7,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.nutriapp.ui.navigation.NavigationApp
+import com.example.nutriapp.ui.screen.home.HomeScreen
+import com.example.nutriapp.ui.screen.home.LoginScreen
 
 import com.example.nutriapp.ui.theme.home.NutriAppTheme
 import com.example.nutriapp.ui.theme.home.ColorProfile
@@ -16,9 +20,9 @@ import com.example.nutriapp.ui.theme.home.ColorProfile
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // setContent es el único punto de entrada para toda tu UI de Compose.
+
         setContent {
-            var navController = rememberNavController()
+            val navController = rememberNavController()
             var darkTheme by remember { mutableStateOf(true) }
             var colorProfile by remember { mutableStateOf(ColorProfile.PREDETERMINADO) }
 
@@ -28,8 +32,19 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     toggleTheme = { darkTheme = !darkTheme },
                     colorProfile = colorProfile,
-                    setColorProfile = { nuevoPerfil -> colorProfile = nuevoPerfil }
+                    setColorProfile = { nuevoPerfil -> colorProfile = nuevoPerfil },
                 )
+                NavHost(
+                    navController = navController,
+                    startDestination = "Login"
+                ){
+                    composable(route = "Login") {
+                        LoginScreen(navController = navController)
+                    }
+                    composable(route = "Home") {
+                        HomeScreen(navController = navController,"test")
+                    }
+                }
             }
         }
     }
