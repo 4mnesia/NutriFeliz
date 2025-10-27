@@ -29,14 +29,13 @@ fun TopBar(isClicked: Boolean,
            onTheme: () -> Unit,
            navController: NavController?){
     val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
-    val onBackgroundColor = MaterialTheme.colorScheme.onBackground
     val primaryColor = MaterialTheme.colorScheme.primary
     val borderColor = MaterialTheme.colorScheme.secondary
     TopAppBar(
         title = {
             Column {
                 Text(text = "NutriTrack", color = onPrimaryColor)
-                Text(text = "Hola, $user", color = onBackgroundColor)
+                Text(text = "Hola, $user", color = onPrimaryColor.copy(alpha = 0.8f))
             }
         },
         actions = {
