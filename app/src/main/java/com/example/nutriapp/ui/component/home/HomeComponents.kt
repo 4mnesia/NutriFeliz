@@ -527,7 +527,7 @@ fun FormFood(
     var tipoComidaExpanded by remember { mutableStateOf(false) }
 
     val listaFiltrada = remember(textoDeBusqueda) {
-        if (textoDeBusqueda.length >= 2) { // Empezamos a buscar a partir de 2 caracteres
+        if (textoDeBusqueda.length >= 2) {
             baseDeDatosAlimentos.filter { it.nombre.contains(textoDeBusqueda, ignoreCase = true) }
         } else {
             emptyList()

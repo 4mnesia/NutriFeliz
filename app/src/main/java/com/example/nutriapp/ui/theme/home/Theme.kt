@@ -1,26 +1,26 @@
-package com.example.nutriapp.ui.theme
+package com.example.nutriapp.ui.theme.home
 
+import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 
 enum class ColorProfile {
     PREDETERMINADO,
     ROSA
 }
 
-// --- Perfil Predeterminado ---
-private val PredeterminadoDarkColorScheme = darkColorScheme(
-    primary = PredeterminadoOscuroPrimary,
-    secondary = PredeterminadoOscuroSecondary,
-    background = PredeterminadoOscuroBackground,
-    surface = PredeterminadoOscuroSurface,
-    onBackground = PredeterminadoOscuroOnBackground,
-    onSurface = PredeterminadoOscuroOnBackground
-)
+
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple,
@@ -33,13 +33,7 @@ private val DarkColorScheme = darkColorScheme(
     onSecondary = formColor,
     onTertiary = barraStatuse,
     onTertiaryContainer= barraStatuse2
-private val PredeterminadoLightColorScheme = lightColorScheme(
-    primary = PredeterminadoClaroPrimary,
-    secondary = PredeterminadoClaroSecondary,
-    background = PredeterminadoClaroBackground,
-    surface = PredeterminadoClaroSurface,
-    onBackground = PredeterminadoClaroOnBackground,
-    onSurface = PredeterminadoClaroOnBackground
+
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -53,35 +47,45 @@ private val LightColorScheme = lightColorScheme(
     onSecondary = formColor2,
     onTertiary = barraStatuse2,
     onTertiaryContainer = barraStatuse
-// --- Perfil Rosa ---
-private val RosaDarkColorScheme = darkColorScheme(
-    primary = RosaOscuroPrimary,
-    secondary = RosaOscuroSecondary,
-    background = RosaOscuroBackground,
-    surface = RosaOscuroSurface,
-    onBackground = RosaOscuroOnBackground,
-    onSurface = RosaOscuroOnBackground
-)
-
-private val RosaLightColorScheme = lightColorScheme(
-    primary = RosaClaroPrimary,
-    background = RosaClaroBackground,
-    surface = RosaClaroSurface,
-    onBackground = RosaClaroOnBackground,
-    onSurface = RosaClaroOnBackground
-)
+    )
 
 @Composable
 fun NutriAppTheme(
-    darkTheme: Boolean = true,
-    colorProfile: ColorProfile = ColorProfile.PREDETERMINADO,
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    // CAMBIO 1: Añade el parámetro 'colorProfile'
+    colorProfile: ColorProfile = ColorProfile.PREDETERMINADO,
+    // (Opcional) Soporte para colores dinámicos de Android 12+
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when (colorProfile) {
-        ColorProfile.PREDETERMINADO -> if (darkTheme) PredeterminadoDarkColorScheme else PredeterminadoLightColorScheme
-        ColorProfile.ROSA -> if (darkTheme) RosaDarkColorScheme else RosaLightColorScheme
+    // CAMBIO 2: Usa una estructura 'when' para seleccionar la paleta de colores
+    // correcta basándote en el 'colorProfile' y 'darkTheme'.
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+        darkTheme -> when (colorProfile) {
+            ColorProfile.PREDETERMINADO -> DarkColorScheme
+            // ColorProfile.OCEANO -> DarkOceanoColorScheme
+            // ColorProfile.BOSQUE -> DarkBosqueColorScheme
+            else -> DarkColorScheme
+        }
+        else -> when (colorProfile) {
+            ColorProfile.PREDETERMINADO -> LightColorScheme
+            // ColorProfile.OCEANO -> LightOceanoColorScheme
+            // ColorProfile.BOSQUE -> LightBosqueColorScheme
+            else -> LightColorScheme
+        }
+    }
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            window.statusBarColor = colorScheme.primary.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+        }
     }
 
     MaterialTheme(

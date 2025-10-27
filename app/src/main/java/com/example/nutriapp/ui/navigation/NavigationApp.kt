@@ -4,26 +4,26 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.nutriapp.ui.screen.HomeScreen
-import com.example.nutriapp.ui.screen.LoginScreen
 import com.example.nutriapp.ui.screen.RegistrationScreen
 import com.example.nutriapp.ui.screen.SettingsScreen
 import com.example.nutriapp.ui.screen.TransicionLogin
-import com.example.nutriapp.ui.theme.ColorProfile
+import com.example.nutriapp.ui.screen.home.HomeScreen
+import com.example.nutriapp.ui.screen.home.LoginScreen
+import com.example.nutriapp.ui.theme.home.ColorProfile
 
 @Composable
 fun NavigationApp(
+    navController: NavHostController,
     toggleTheme: () -> Unit,
     colorProfile: ColorProfile,
     setColorProfile: (ColorProfile) -> Unit
 ) {
-    val navController = rememberNavController()
-
     NavHost(
         navController = navController, 
         startDestination = NavItem.Login.route,
@@ -48,7 +48,7 @@ fun NavigationApp(
             arguments = listOf(navArgument("username") { type = NavType.StringType })
         ) { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: "Usuario"
-            HomeScreen(navController = navController, username = username, toggleTheme = toggleTheme)
+            HomeScreen(navController = navController, username = username)
         }
         composable(NavItem.Settings.route) {
             SettingsScreen(
