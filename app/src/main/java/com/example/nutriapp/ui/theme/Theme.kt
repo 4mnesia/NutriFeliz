@@ -31,7 +31,10 @@ private val LightColorScheme = lightColorScheme(
     onBackground = white,
     background = PurpleGrey80,
     surface = Content1,
-    onSurface = PurpleClare
+    onSurface = PurpleClare,
+    onSecondary = formColor2,
+    onTertiary = barraStatuse2,
+    onTertiaryContainer = barraStatuse
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
