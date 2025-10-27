@@ -1,10 +1,11 @@
 package com.example.nutriapp.viewmodel.home
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.nutriapp.model.home.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import java.util.UUID
 
 
@@ -49,17 +50,17 @@ data class HomeUiState(
 
 // 2. EL VIEWMODEL
 class HomeViewModel : ViewModel() {
-    var uiState by mutableStateOf(HomeUiState())
-        private set
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
 
     fun onThemeChange() {
-        uiState = uiState.copy(esTemaOscuro = !uiState.esTemaOscuro)
+        _uiState.update { it.copy(esTemaOscuro = !it.esTemaOscuro) }
     }
 
 
     fun onToggleFormularioActividad() {
-        uiState = uiState.copy(formularioActividadAbierto = !uiState.formularioActividadAbierto)
+        _uiState.update { it.copy(formularioActividadAbierto = !it.formularioActividadAbierto) }
     }
 
     fun onGuardarActividad(tipo: String, duracion: Int) {
@@ -70,19 +71,18 @@ class HomeViewModel : ViewModel() {
             duracion = duracion,
             calorias = caloriasCalculadas
         )
-        val nuevaLista = uiState.listaActividades + nuevaActividad
-        recalcularEstadoDerivado(newState = uiState.copy(
+        val nuevaLista = _uiState.value.listaActividades + nuevaActividad
+        recalcularEstadoDerivado(newState = _uiState.value.copy(
             listaActividades = nuevaLista,
             formularioActividadAbierto = false
         ))
     }
     fun onBorrarActividad(actividad: Actividad) {
-        uiState = uiState.copy(
-            listaActividades = uiState.listaActividades.filter { it.id != actividad.id }
-        )
+        val nuevaLista = _uiState.value.listaActividades.filter { it.id != actividad.id }
+        recalcularEstadoDerivado(newState = _uiState.value.copy(listaActividades = nuevaLista))
     }
     fun onToggleFormularioComida() {
-        uiState = uiState.copy(formularioComidaAbierto = !uiState.formularioComidaAbierto)
+        _uiState.update { it.copy(formularioComidaAbierto = !it.formularioComidaAbierto) }
     }
     fun onGuardarComida(alimento: Alimento, cantidad: Int, tipoComida: String) { // Ahora recibe tipoComida
         val nuevaComida = ComidaAlacenada(
@@ -90,15 +90,15 @@ class HomeViewModel : ViewModel() {
             cantidadEnGramos = cantidad,
             tipoDeComida = tipoComida
         )
-        val nuevaListaComidas = uiState.listaComidas + nuevaComida
-        recalcularEstadoDerivado(newState = uiState.copy(
+        val nuevaListaComidas = _uiState.value.listaComidas + nuevaComida
+        recalcularEstadoDerivado(newState = _uiState.value.copy(
             listaComidas = nuevaListaComidas, // Actualiza la lista
             formularioComidaAbierto = false
         ))
     }
     fun onBorrarComida(comida: ComidaAlacenada) {
-        val nuevaListaComidas = uiState.listaComidas.filter { it.id != comida.id }
-        recalcularEstadoDerivado(newState = uiState.copy(listaComidas = nuevaListaComidas))
+        val nuevaListaComidas = _uiState.value.listaComidas.filter { it.id != comida.id }
+        recalcularEstadoDerivado(newState = _uiState.value.copy(listaComidas = nuevaListaComidas))
     }
     private fun recalcularEstadoDerivado(newState: HomeUiState) {
         val caloriasQuemadas = newState.listaActividades.sumOf { it.calorias }
@@ -118,7 +118,7 @@ class HomeViewModel : ViewModel() {
         val progresoProteinas = (proteinasConsumidas.toFloat() / newState.metaProteinas.toFloat()).coerceIn(0f, 1f)
         val progresoCarbos = (carbosConsumidos.toFloat() / newState.metaCarbos.toFloat()).coerceIn(0f, 1f)
         val progresoGrasas = (grasasConsumidas.toFloat() / newState.metaGrasas.toFloat()).coerceIn(0f, 1f)
-        uiState = newState.copy(
+        _uiState.value = newState.copy(
             proteinasConsumidas = proteinasConsumidas,
             carbosConsumidos = carbosConsumidos,
             grasasConsumidas = grasasConsumidas,

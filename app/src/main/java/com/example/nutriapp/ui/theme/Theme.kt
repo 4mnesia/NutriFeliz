@@ -21,34 +21,55 @@ enum class ColorProfile {
     ROSA
 }
 
-
-
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple,
-    secondary = Border,
-    tertiary = white,
-    onBackground = Purple40,
-    background = Content1,
-    surface = magent,
-    onSurface = Buttons,
-    onSecondary = formColor,
-    onTertiary = barraStatuse,
-    onTertiaryContainer= barraStatuse2
-
+    primary = PurpuraDarkPrimary,
+    onPrimary = PurpuraDarkOnPrimary,
+    secondary = PurpuraDarkSecondary,
+    onSecondary = PurpuraDarkOnBackground,
+    tertiary = PurpuraDarkTertiary,
+    onTertiary = PurpuraDarkOnPrimary,
+    background = PurpuraDarkBackground,
+    onBackground = PurpuraDarkOnBackground,
+    surface = PurpuraDarkSurface,
+    onSurface = PurpuraDarkOnSurface,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Border,
-    secondary = Purple,
-    tertiary = Purple40,
-    onBackground = white,
-    background = PurpleGrey80,
-    surface = Content1,
-    onSurface = PurpleClare,
-    onSecondary = formColor2,
-    onTertiary = barraStatuse2,
-    onTertiaryContainer = barraStatuse
-    )
+    primary = PredeterminadoLightPrimary,
+    onPrimary = PredeterminadoLightOnPrimary,
+    secondary = PredeterminadoLightSecondary,
+    onSecondary = PredeterminadoLightOnSecondary,
+    tertiary = PredeterminadoLightTertiary,
+    onTertiary = PredeterminadoLightOnTertiary,
+    background = PredeterminadoLightBackground,
+    onBackground = PredeterminadoLightOnBackground,
+    surface = PredeterminadoLightSurface,
+    onSurface = PredeterminadoLightOnSurface,
+)
+
+private val LightRosaColorScheme = lightColorScheme(
+    primary = RosaClaroPrimary,       // Fondo azul para la TopBar
+    secondary = RosaClaroSurface,
+    tertiary = Color.White,            // Texto e iconos blancos para que contrasten
+    background = RosaClaroBackground,
+    surface = RosaClaroSurface,
+    onPrimary = Color.White,
+    onSecondary = Color.Black,
+    onBackground = RosaClaroOnBackground,
+    onSurface = RosaClaroOnBackground
+)
+
+private val DarkRosaColorScheme = darkColorScheme(
+    primary = RosaOscuroPrimary,      // Fondo rosa claro para la TopBar
+    secondary = RosaOscuroSecondary,
+    tertiary = RosaOscuroBackground,  // Texto e iconos oscuros para que contrasten
+    background = RosaOscuroBackground,
+    surface = RosaOscuroSurface,
+    onPrimary = Color.Black,
+    onSecondary = Color.Black,
+    onBackground = RosaOscuroOnBackground,
+    onSurface = RosaOscuroOnBackground
+)
 
 @Suppress("DEPRECATION")
 @Composable
@@ -66,14 +87,12 @@ fun NutriAppTheme(
         }
         darkTheme -> when (colorProfile) {
             ColorProfile.PREDETERMINADO -> DarkColorScheme
-            // ColorProfile.OCEANO -> DarkOceanoColorScheme
-            // ColorProfile.BOSQUE -> DarkBosqueColorScheme
+            ColorProfile.ROSA -> DarkRosaColorScheme
             else -> DarkColorScheme
         }
         else -> when (colorProfile) {
             ColorProfile.PREDETERMINADO -> LightColorScheme
-            // ColorProfile.OCEANO -> LightOceanoColorScheme
-            // ColorProfile.BOSQUE -> LightBosqueColorScheme
+            ColorProfile.ROSA -> LightRosaColorScheme
             else -> LightColorScheme
         }
     }

@@ -37,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,7 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.nutriapp.R
-import com.example.nutriapp.ui.navigation.NavItem
+import com.example.nutriapp.navigation.NavItem
 import kotlinx.coroutines.delay
 
 private val nutritionFacts = listOf(
@@ -168,7 +167,7 @@ fun TransicionLogin(navController: NavController, username: String) {
                     .fillMaxWidth()
                     .height(3.dp),
                 color = MaterialTheme.colorScheme.primary,
-                trackColor = Color.Transparent
+                trackColor = MaterialTheme.colorScheme.background
             )
         }
     }

@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -21,21 +22,23 @@ fun ColorChangingProgressBar(progress: Float) {
 
     val animatedProgress by animateFloatAsState(
         targetValue = safeProgress,
-        animationSpec = tween(durationMillis = 800)
+        animationSpec = tween(durationMillis = 800),
+        label = "ProgressBarAnimation"
     )
-    val fillColor =MaterialTheme.colorScheme.onTertiaryContainer
+
     Box(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.onTertiary, RoundedCornerShape(50.dp))
             .fillMaxWidth()
             .height(10.dp)
+            .clip(RoundedCornerShape(50.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
 
     ) {
         Box(
             modifier = Modifier
                 .fillMaxHeight()
                 .fillMaxWidth(animatedProgress)
-                .background(fillColor, RoundedCornerShape(topStart = 50.dp, bottomStart = 50.dp))
+                .background(MaterialTheme.colorScheme.primary)
         )
     }
 }

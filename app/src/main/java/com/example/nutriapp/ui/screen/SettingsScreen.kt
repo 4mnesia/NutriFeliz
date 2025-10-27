@@ -1,10 +1,12 @@
 package com.example.nutriapp.ui.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -18,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,12 +52,23 @@ fun SettingsScreen(
                             contentDescription = "Atrás"
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
         }
     ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues).padding(16.dp)) {
-            Text("Temas", style = MaterialTheme.typography.titleLarge)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
+            Text("Temas", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
             Box {
                 Row(
                     modifier = Modifier
@@ -64,21 +78,22 @@ fun SettingsScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = if (colorProfile == ColorProfile.PREDETERMINADO) "Predeterminado" else "Rosa")
+                    Text(text = if (colorProfile == ColorProfile.PREDETERMINADO) "Predeterminado" else "Rosa", color = MaterialTheme.colorScheme.onBackground)
                 }
                 DropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Predeterminado") },
+                        text = { Text("Predeterminado", color = MaterialTheme.colorScheme.onSurface) },
                         onClick = {
                             setColorProfile(ColorProfile.PREDETERMINADO)
                             expanded = false
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Rosa") },
+                        text = { Text("Rosa", color = MaterialTheme.colorScheme.onSurface) },
                         onClick = {
                             setColorProfile(ColorProfile.ROSA)
                             expanded = false

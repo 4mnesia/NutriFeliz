@@ -14,7 +14,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.forEach
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,8 +43,6 @@ import androidx.compose.material.icons.outlined.Fastfood
 import androidx.compose.material.icons.outlined.Nightlight
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.WbSunny
-import androidx.compose.material3.Divider
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -60,7 +57,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -92,21 +88,22 @@ fun MainBox(   currentCalories: Int ,
 ){
     val colorText = MaterialTheme.colorScheme.onBackground
     val colorText1 = MaterialTheme.colorScheme.tertiary
-    Column(Modifier
-        .size(width = 400.dp, height = 150.dp)
-        .border(
-            border = BorderStroke(1.dp, Color(0xFF7e2a0c)),
-            shape = RoundedCornerShape(10.dp)
-        )
-        .background(
-            color = Color(0xAD1A0F2E),
-            shape = RoundedCornerShape(size = 10.dp)
-        )
+    Column(
+        Modifier
+            .size(width = 400.dp, height = 150.dp)
+            .border(
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
+                shape = RoundedCornerShape(10.dp)
+            )
+            .background(
+                color = MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(size = 10.dp)
+            )
     ){
         Column(
             modifier = Modifier
                 .background(
-                    color = Color(color = 0x227E2A0C),
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(size = 10.dp)
                 ), verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -233,9 +230,10 @@ fun ActionRegister(
                 Butons(start = 90.dp,onClick = onToggleFormulario)
             }
         }
-        Column(Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
             FormACtivity(
@@ -346,7 +344,6 @@ fun FoodRegister(
                             if (comida != comidasDelTipo.last()) {
                                 HorizontalDivider(
                                     modifier = Modifier.padding(vertical = 8.dp),
-                                    thickness = DividerDefaults.Thickness,
                                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
                                 )
                             }
@@ -463,7 +460,7 @@ fun Image(){
         modifier = Modifier
             .padding(vertical = 10.dp)
             .clip(CircleShape)
-            .background(color = Color(0xFFff6900))
+            .background(color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.8f))
             .size(50.dp)
     )
 }
@@ -506,20 +503,6 @@ fun FormACtivity(clicked: Boolean,
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                     },
-                    colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-                        unfocusedContainerColor = Color.Transparent,
-                        focusedContainerColor = MaterialTheme.colorScheme.primary,
-                        unfocusedLabelColor = Color(0xFFD1C4E9),
-                        focusedLabelColor = Color(0xFFD1C4E9),
-                        unfocusedTextColor = Color.White,
-                        focusedTextColor = Color.White,
-                        unfocusedTrailingIconColor = Color(0xFFBDBDBD),
-                        focusedTrailingIconColor = Color(0xFFBDBDBD),
-                        unfocusedBorderColor = Color(0xFFA78BFA),
-                        focusedBorderColor = Color(0xFFA78BFA)
-
-                    )
-                    ,
                     modifier = Modifier
                         .menuAnchor(
                             ExposedDropdownMenuAnchorType.PrimaryEditable,
@@ -550,18 +533,6 @@ fun FormACtivity(clicked: Boolean,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), // Muestra el teclado numérico
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedContainerColor = MaterialTheme.colorScheme.primary,
-                    unfocusedLabelColor = Color(0xFFD1C4E9),
-                    focusedLabelColor = Color(0xFFD1C4E9),
-                    unfocusedTextColor = Color.White,
-                    focusedTextColor = Color.White,
-                    unfocusedTrailingIconColor = Color(0xFFBDBDBD),
-                    focusedTrailingIconColor = Color(0xFFBDBDBD),
-                    unfocusedBorderColor = Color(0xFFA78BFA),
-                    focusedBorderColor = Color(0xFFA78BFA)
-                )
             )
             FormularioActionButtons(
                 onGuardarClick ={
@@ -618,7 +589,7 @@ fun FormFood(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.5f))
+            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
@@ -633,7 +604,7 @@ fun FormFood(
                     indication = null
                 ) {}
                 .background(
-                    color = MaterialTheme.colorScheme.onSecondary,
+                    color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(16.dp)
                 )
                 .padding(24.dp),
@@ -674,7 +645,7 @@ fun FormFood(
             }
             OutlinedTextField(
                 value = cantidad,
-                onValueChange = { cantidad = it.filter { char -> char.isDigit() } },
+                onValueChange = { it.filter { char -> char.isDigit() } },
                 label = { Text("Cantidad (gramos)") },
                 placeholder = { Text("Ej: 100") },
                 modifier = Modifier.fillMaxWidth(),
@@ -762,7 +733,7 @@ fun ResultadoBusquedaItem(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(alimento.nombre, color = Color.White, fontWeight = FontWeight.Bold)
+            Text(alimento.nombre, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
             Text(
                 text = "Por 100g: ${alimento.caloriasPor100g} cal • ${alimento.proteinasPor100g}g P • ${alimento.carbosPor100g}g C • ${alimento.grasasPor100g}g G",
                 fontSize = 12.sp,
@@ -773,7 +744,7 @@ fun ResultadoBusquedaItem(
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = "Seleccionado",
-                tint = Color.Green,
+                tint = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
@@ -794,7 +765,7 @@ fun ValoresNutricionalesCalculados(nutrientes: NutrientesCalculados) {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("Valores: ", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.8f))
+        Text("Valores: ", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
         Text(
             buildAnnotatedString {
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
@@ -804,7 +775,7 @@ fun ValoresNutricionalesCalculados(nutrientes: NutrientesCalculados) {
                 append(" • ${String.format("%.1f", nutrientes.carbos)}g C")
                 append(" • ${String.format("%.1f", nutrientes.grasas)}g G")
             },
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onSurface,
             fontSize = 13.sp
         )
     }
@@ -845,27 +816,27 @@ fun ActividadGuardadaItem(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .background(
-                            color = Color(0xFF3F2E65),
+                            color = MaterialTheme.colorScheme.secondary,
                             shape = RoundedCornerShape(8.dp)
                         )
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     MyText(
                         text = "${actividad.duracion} min",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSecondary,
                         fontSize = 14.sp
                     )
                     Spacer(Modifier.width(8.dp))
                     Icon(
                         painter = painterResource(R.drawable.large),
                         contentDescription = "Calorías",
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(4.dp))
                     MyText(
                         text = actividad.calorias.toString(),
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSecondary,
                         fontSize = 14.sp
                     )
                 }
@@ -877,7 +848,7 @@ fun ActividadGuardadaItem(
             Icon(
                 imageVector = Icons.Default.Delete,
                 contentDescription = "Borrar actividad",
-                tint = Color.Red
+                tint = MaterialTheme.colorScheme.error
             )
         }
     }
@@ -938,7 +909,7 @@ fun FoodItemRow(
             )
         }
         IconButton(onClick = onDelete) {
-            Icon(Icons.Default.DeleteOutline, contentDescription = "Borrar", tint = Color.Red.copy(alpha = 0.8f))
+            Icon(Icons.Default.DeleteOutline, contentDescription = "Borrar", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f))
         }
     }
 }

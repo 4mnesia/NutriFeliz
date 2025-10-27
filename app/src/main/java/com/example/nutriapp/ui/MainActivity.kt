@@ -9,7 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
-import com.example.nutriapp.ui.navigation.NavigationApp
+import com.example.nutriapp.navigation.NavigationApp
 import com.example.nutriapp.ui.theme.ColorProfile
 import com.example.nutriapp.ui.theme.NutriAppTheme
 

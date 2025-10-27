@@ -25,13 +25,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -50,7 +49,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.nutriapp.R
-import com.example.nutriapp.ui.navigation.NavItem
+import com.example.nutriapp.navigation.NavItem
 import com.example.nutriapp.ui.theme.NutriAppTheme
 import com.example.nutriapp.viewmodel.LoginStatus
 import com.example.nutriapp.viewmodel.LoginViewModel
@@ -91,7 +90,7 @@ fun LoginScreen(
             modifier = Modifier
                 .animateContentSize(animationSpec = tween(durationMillis = 500))
                 .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.primary)
+                .background(MaterialTheme.colorScheme.surface)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
@@ -109,7 +108,7 @@ fun LoginScreen(
                 Text(
                     text = "Bienvenido a NutriAPP",
                     style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -140,13 +139,6 @@ fun LoginScreen(
                     label = { Text(text = "Email o Usuario") },
                     isError = uiState.loginStatus == LoginStatus.ERROR,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.onBackground,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.tertiary,
-                        focusedLabelColor = MaterialTheme.colorScheme.onBackground,
-                        unfocusedLabelColor = MaterialTheme.colorScheme.tertiary,
-                        focusedContainerColor = MaterialTheme.colorScheme.background,
-                    )
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
@@ -156,13 +148,6 @@ fun LoginScreen(
                     value = uiState.password,
                     onValueChange = loginViewModel::onPasswordChange,
                     label = { Text(text = "Contraseña") },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.onBackground,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.tertiary,
-                        focusedLabelColor = MaterialTheme.colorScheme.onBackground,
-                        unfocusedLabelColor = MaterialTheme.colorScheme.tertiary,
-                        focusedContainerColor = MaterialTheme.colorScheme.background,
-                    ),
                     isError = uiState.loginStatus == LoginStatus.ERROR,
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
@@ -180,12 +165,6 @@ fun LoginScreen(
                     Button(
                         onClick = loginViewModel::login,
                         enabled = uiState.loginStatus != LoginStatus.LOADING,
-                        colors = ButtonColors(
-                            containerColor = MaterialTheme.colorScheme.background,
-                            contentColor = MaterialTheme.colorScheme.secondary,
-                            disabledContainerColor = MaterialTheme.colorScheme.onBackground,
-                            disabledContentColor = MaterialTheme.colorScheme.onSecondary
-                        ),
                         modifier = Modifier.weight(1f)
                     ) {
                         if (uiState.loginStatus == LoginStatus.LOADING) {
@@ -197,11 +176,8 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.width(16.dp))
                     Button(
                         onClick = { navController.navigate(NavItem.Registration.route) },
-                        colors = ButtonColors(
-                            containerColor = MaterialTheme.colorScheme.background,
-                            contentColor = MaterialTheme.colorScheme.secondary,
-                            disabledContainerColor = MaterialTheme.colorScheme.onBackground,
-                            disabledContentColor = MaterialTheme.colorScheme.onSecondary
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary
                         ),
                         modifier = Modifier.weight(1f)
                     ) {

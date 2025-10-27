@@ -1,8 +1,6 @@
 package com.example.nutriapp.ui.component.home
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,7 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,14 +32,14 @@ fun Butons(start: Dp = 0.dp,top: Dp = 0.dp,onClick:()->Unit){
         shape = RoundedCornerShape(5.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.onSurface,
-            contentColor = Color.White
+            contentColor = MaterialTheme.colorScheme.surface
         ),
         contentPadding = PaddingValues(0.dp)
     )
     {
-        Row(modifier = Modifier.size(width = 80.dp,height = 25.dp)){
-            Icon(imageVector = Icons.Default.Add, contentDescription = "", tint = MaterialTheme.colorScheme.background)
-            MyText("Agregar", color = MaterialTheme.colorScheme.background, pad = 2.dp)
+        Row(modifier = Modifier.size(width = 80.dp,height = 25.dp), verticalAlignment = Alignment.CenterVertically){
+            Icon(imageVector = Icons.Default.Add, contentDescription = "", tint = MaterialTheme.colorScheme.surface)
+            Text("Agregar", color = MaterialTheme.colorScheme.surface, modifier = Modifier.padding(start = 2.dp))
         }
     }
 }
@@ -59,33 +56,22 @@ fun FormularioActionButtons(
 
         Button(
             onClick = onCancelarClick,
-            modifier=modifier
-                .border(
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = RoundedCornerShape(8.dp)
-                ),
+            shape = RoundedCornerShape(8.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
 
             ) {
-            Text("Cancelar", color = MaterialTheme.colorScheme.tertiary)
+            Text("Cancelar", color = MaterialTheme.colorScheme.onPrimary)
         }
 
         Button(
             onClick = onGuardarClick,
-            modifier=modifier
-                .border(
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .background(
-                    color = MaterialTheme.colorScheme.onSurface,
-                    shape = RoundedCornerShape(8.dp)
-                ),
+            shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.onSurface,
+                containerColor = MaterialTheme.colorScheme.tertiary,
+                contentColor = MaterialTheme.colorScheme.onTertiary
             )
         ) {
             Text("Guardar")
@@ -107,8 +93,10 @@ fun FormularioPrincipalButton(
             .height(50.dp),
         shape = RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.onSurface,
-            disabledContainerColor = Color.Gray.copy(alpha = 0.3f)
+            containerColor = MaterialTheme.colorScheme.tertiary,
+            contentColor = MaterialTheme.colorScheme.onTertiary,
+            disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         )
     ) {
         Text(texto, fontSize = 16.sp)

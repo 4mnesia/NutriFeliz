@@ -43,7 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -54,7 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.nutriapp.repository.RegistrationResult
-import com.example.nutriapp.ui.navigation.NavItem
+import com.example.nutriapp.navigation.NavItem
 import com.example.nutriapp.util.PasswordStrength
 import com.example.nutriapp.viewmodel.RegistrationViewModel
 import kotlinx.coroutines.delay
@@ -217,7 +216,7 @@ fun RegistrationScreen(
                         RegistrationResult.FAILED -> "Error: No se pudo completar el registro."
                         else -> ""
                     }
-                    val color = if (uiState.registrationResult == RegistrationResult.SUCCESS) Color(0xFF00C853) else MaterialTheme.colorScheme.error
+                    val color = if (uiState.registrationResult == RegistrationResult.SUCCESS) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = message,
@@ -245,10 +244,10 @@ fun RegistrationScreen(
 @Composable
 fun PasswordStrengthIndicator(strength: PasswordStrength) {
     val (strengthText, targetColor, targetProgress) = when (strength) {
-        PasswordStrength.WEAK -> Triple("Débil", Color.Red, 0.25f)
-        PasswordStrength.MEDIUM -> Triple("Media", Color.Yellow, 0.5f)
-        PasswordStrength.STRONG -> Triple("Fuerte", Color(0xFF00F59B), 0.75f)
-        PasswordStrength.VERY_STRONG -> Triple("Muy Fuerte", Color.Green, 1f)
+        PasswordStrength.WEAK -> Triple("Débil", MaterialTheme.colorScheme.error, 0.25f)
+        PasswordStrength.MEDIUM -> Triple("Media", MaterialTheme.colorScheme.secondary, 0.5f)
+        PasswordStrength.STRONG -> Triple("Fuerte", MaterialTheme.colorScheme.primary, 0.75f)
+        PasswordStrength.VERY_STRONG -> Triple("Muy Fuerte", MaterialTheme.colorScheme.tertiary, 1f)
     }
 
     val animatedProgress by animateFloatAsState(

@@ -1,7 +1,8 @@
-package com.example.nutriapp.ui.component.home
+package com.example.nutriapp.ui.component
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
@@ -19,7 +20,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.nutriapp.ui.navigation.NavItem
+import com.example.nutriapp.navigation.NavItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,26 +28,25 @@ fun TopBar(isClicked: Boolean,
            user: String,
            onTheme: () -> Unit,
            navController: NavController?){
-    val ternaryColor = MaterialTheme.colorScheme.tertiary
+    val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
     val onBackgroundColor = MaterialTheme.colorScheme.onBackground
     val primaryColor = MaterialTheme.colorScheme.primary
     val borderColor = MaterialTheme.colorScheme.secondary
     TopAppBar(
         title = {
             Column {
-                Text(text = "NutriTrack", color = ternaryColor)
+                Text(text = "NutriTrack", color = onPrimaryColor)
                 Text(text = "Hola, $user", color = onBackgroundColor)
             }
         },
         actions = {
-            Row {
                 IconButton(
                     onClick = onTheme
                 ) {
                     Icon(
                         imageVector = if (isClicked) Icons.Outlined.DarkMode else Icons.Outlined.LightMode,
                         contentDescription = "Color Changing",
-                        tint = if (isClicked) ternaryColor else ternaryColor
+                        tint = onPrimaryColor
                     )
                 }
                 IconButton(
@@ -57,17 +57,17 @@ fun TopBar(isClicked: Boolean,
                     Icon(
                         imageVector = Icons.Outlined.Settings ,
                         contentDescription = "Color Changing",
-                        tint = ternaryColor
+                        tint = onPrimaryColor
                     )
                 }
-
-            }
 
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = primaryColor
         ),
-        modifier = Modifier.drawBehind {
+        modifier = Modifier
+            .height(intrinsicSize = IntrinsicSize.Max)
+            .drawBehind {
             val strokeWidth = 2.dp.toPx()
             drawLine(
                 color = borderColor,
