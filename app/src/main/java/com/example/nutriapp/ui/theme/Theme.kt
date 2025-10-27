@@ -18,7 +18,10 @@ private val DarkColorScheme = darkColorScheme(
     onBackground = Purple40,
     background = Content1,
     surface = magent,
-    onSurface = Buttons
+    onSurface = Buttons,
+    onSecondary = formColor,
+    onTertiary = barraStatuse,
+    onTertiaryContainer= barraStatuse2
 )
 
 private val LightColorScheme = lightColorScheme(
