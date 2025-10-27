@@ -10,7 +10,7 @@ import java.util.UUID
 
 data class HomeUiState(
     // Estado del tema
-    val esTemaOscuro: Boolean = false,
+    val esTemaOscuro: Boolean = true,
 
     // Datos base de Actividad
     val listaActividades: List<Actividad> = emptyList(),

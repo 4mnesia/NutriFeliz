@@ -19,7 +19,6 @@ import com.example.nutriapp.ui.theme.home.ColorProfile
 @Composable
 fun NavigationApp(
     navController: NavHostController,
-    toggleTheme: () -> Unit,
     colorProfile: ColorProfile,
     setColorProfile: (ColorProfile) -> Unit
 ) {
@@ -47,7 +46,7 @@ fun NavigationApp(
             arguments = listOf(navArgument("username") { type = NavType.StringType })
         ) { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: "Usuario"
-            HomeScreen(navController = navController, username = username, toggleTheme = toggleTheme)
+            HomeScreen(navController = navController, username = username)
         }
         composable(NavItem.Settings.route) {
             SettingsScreen(

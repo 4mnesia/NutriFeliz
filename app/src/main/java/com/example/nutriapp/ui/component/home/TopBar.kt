@@ -1,10 +1,13 @@
 package com.example.nutriapp.ui.component.home
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DarkMode
 
 import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Settings
 
 
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,11 +23,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.nutriapp.ui.navigation.NavItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(isClicked: Boolean,user: String,
-           onTheme: () -> Unit){
+fun TopBar(isClicked: Boolean,
+           user: String,
+           onTheme: () -> Unit,
+           navController: NavController?){
     val ternaryColor = MaterialTheme.colorScheme.tertiary
     val onBackgroundColor = MaterialTheme.colorScheme.onBackground
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -76,7 +83,4 @@ fun TopBar(isClicked: Boolean,user: String,
         }
 
     )
-
 }
-
-

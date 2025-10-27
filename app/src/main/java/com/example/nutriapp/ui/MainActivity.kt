@@ -24,16 +24,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val navController = rememberNavController()
-            var darkTheme by remember { mutableStateOf(true) }
             var colorProfile by remember { mutableStateOf(ColorProfile.PREDETERMINADO) }
 
             NutriAppTheme(
-                darkTheme = darkTheme,
                 colorProfile = colorProfile
             ) {
                 NavigationApp(
                     navController = navController,
-                    toggleTheme = { darkTheme = !darkTheme },
                     colorProfile = colorProfile,
                     setColorProfile = { nuevoPerfil -> colorProfile = nuevoPerfil }
                 )
@@ -55,7 +52,6 @@ private fun MainAppPreview(homeViewModel: HomeViewModel = viewModel()) {
 
         NavigationApp(
             navController = navController,
-            toggleTheme = { homeViewModel.onThemeChange() },
             colorProfile = colorProfile,
             setColorProfile = { newProfile -> colorProfile = newProfile }
         )
