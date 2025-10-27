@@ -188,7 +188,13 @@ fun RegistrationScreen(
                         supportingText = { if (!uiState.passwordsMatch && uiState.confirmPassword.isNotEmpty()) Text("Las contraseñas no coinciden") },
                         visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { if(uiState.isFormValid) registrationViewModel.registerUser() })
+                        keyboardActions = KeyboardActions(onDone = { if(uiState.isFormValid) registrationViewModel.registerUser() }),
+                        trailingIcon = { // ICONO AÑADIDO
+                            val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                Icon(imageVector = image, contentDescription = "Toggle password visibility")
+                            }
+                        }
                     )
                 }
                 Spacer(modifier = Modifier.height(24.dp))
