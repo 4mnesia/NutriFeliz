@@ -55,7 +55,8 @@ fun HomeScreen (
                     TopBar(
                         isClicked = uiState.esTemaOscuro,
                         user = username,
-                        onTheme = toggleTheme)
+                        onTheme = { homeViewModel.onThemeChange() }
+                    )
                 },
                 bottomBar = {
                     NavigationBar(
@@ -98,7 +99,10 @@ fun HomeScreen (
                 ) {
                     MainBox(
                         currentCalories = uiState.caloriasNetas,
-                        goalCalories = uiState.metaCalorias
+                        goalCalories = uiState.metaCalorias,
+                        maxCalories = uiState.maxCalorias,
+                        progress = uiState.progresoCalorias
+
                     )
                     BoxHome(
                         proteinasActuales = uiState.proteinasConsumidas,
@@ -131,15 +135,19 @@ fun HomeScreen (
                         }
                     )
 
-                    FoodRegister(onAgregarClick = { homeViewModel.onToggleFormularioComida() })
+                    FoodRegister(
+                        listaComidas = uiState.listaComidas,
+                        onAgregarClick = { homeViewModel.onToggleFormularioComida() },
+                        onBorrarComida = { comida -> homeViewModel.onBorrarComida(comida) }
+                    )
                 }
             }
 
             if (uiState.formularioComidaAbierto) {
                 FormFood(
                     onDismiss = { homeViewModel.onToggleFormularioComida() },
-                    onGuardarComida = { alimento, cantidad,_->
-                        homeViewModel.onGuardarComida(alimento, cantidad)
+                    onGuardarComida = { alimento,cantidad,tipoComida ->
+                        homeViewModel.onGuardarComida(alimento, cantidad, tipoComida)
                     }
                 )
             }

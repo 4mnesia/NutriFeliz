@@ -17,6 +17,7 @@ import com.example.nutriapp.ui.theme.home.ColorProfile
 import com.example.nutriapp.ui.theme.home.NutriAppTheme
 import com.example.nutriapp.viewmodel.home.HomeViewModel
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
@@ -43,8 +44,6 @@ class MainActivity : ComponentActivity() {
 @Preview(name = "App Main Preview", showBackground = true)
 @Composable
 private fun MainAppPreview(homeViewModel: HomeViewModel = viewModel()) {
-    // 1. Simulamos la creación del estado que vive en MainActivity.
-    //    Creamos un NavController falso y el estado para el tema.
     val navController = rememberNavController()
     var darkTheme by remember { mutableStateOf(true) }
     var colorProfile by remember { mutableStateOf(ColorProfile.PREDETERMINADO) }

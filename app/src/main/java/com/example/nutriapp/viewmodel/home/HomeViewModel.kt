@@ -4,8 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.example.nutriapp.model.home.Actividad
-import com.example.nutriapp.model.home.Alimento
+import com.example.nutriapp.model.home.*
 import java.util.UUID
 
 
@@ -18,15 +17,19 @@ data class HomeUiState(
     val formularioActividadAbierto: Boolean = false,
 
     // Datos base de Comida
+    val listaComidas: List<ComidaAlacenada> = emptyList(),
     val formularioComidaAbierto: Boolean = false,
     val proteinasConsumidas: Int = 0,
     val carbosConsumidos: Int = 0,
     val grasasConsumidas: Int = 0,
 
-
+    //perdidas
     val caloriasQuemadas: Int = 0,
     val caloriasConsumidas: Int = 0,
     val caloriasNetas: Int = 0,
+
+    // Progresos
+    val progresoCalorias: Float = 0f,
     val progresoProteinas: Float = 0f,
     val progresoCarbos: Float = 0f,
     val progresoGrasas: Float = 0f,
@@ -35,7 +38,13 @@ data class HomeUiState(
     val metaProteinas: Int = 180,
     val metaCarbos: Int = 300,
     val metaGrasas: Int = 80,
-    val metaCalorias: Int = 2000
+    val metaCalorias: Int = 2000,
+
+    // Max
+    val maxProteinas: Int = 250,
+    val maxCarbos: Int = 500,
+    val maxGrasas: Int = 150,
+    val maxCalorias: Int = 2200
 )
 
 // 2. EL VIEWMODEL
@@ -67,41 +76,60 @@ class HomeViewModel : ViewModel() {
             formularioActividadAbierto = false
         ))
     }
-
     fun onBorrarActividad(actividad: Actividad) {
         uiState = uiState.copy(
             listaActividades = uiState.listaActividades.filter { it.id != actividad.id }
         )
     }
-
     fun onToggleFormularioComida() {
         uiState = uiState.copy(formularioComidaAbierto = !uiState.formularioComidaAbierto)
     }
-
-    fun onGuardarComida(alimento: Alimento, cantidad: Int) {
-        val ratio = cantidad / 100.0f
-        uiState = uiState.copy(
-            proteinasConsumidas = uiState.proteinasConsumidas + (alimento.proteinasPor100g * ratio).toInt(),
-            carbosConsumidos = uiState.carbosConsumidos + (alimento.carbosPor100g * ratio).toInt(),
-            grasasConsumidas = uiState.grasasConsumidas + (alimento.grasasPor100g * ratio).toInt(),
-            formularioComidaAbierto = false
+    fun onGuardarComida(alimento: Alimento, cantidad: Int, tipoComida: String) { // Ahora recibe tipoComida
+        val nuevaComida = ComidaAlacenada(
+            alimento = alimento,
+            cantidadEnGramos = cantidad,
+            tipoDeComida = tipoComida
         )
+        val nuevaListaComidas = uiState.listaComidas + nuevaComida
+        recalcularEstadoDerivado(newState = uiState.copy(
+            listaComidas = nuevaListaComidas, // Actualiza la lista
+            formularioComidaAbierto = false
+        ))
+    }
+    fun onBorrarComida(comida: ComidaAlacenada) {
+        val nuevaListaComidas = uiState.listaComidas.filter { it.id != comida.id }
+        recalcularEstadoDerivado(newState = uiState.copy(listaComidas = nuevaListaComidas))
     }
     private fun recalcularEstadoDerivado(newState: HomeUiState) {
         val caloriasQuemadas = newState.listaActividades.sumOf { it.calorias }
-        val caloriasConsumidas = (newState.proteinasConsumidas * 4) + (newState.carbosConsumidos * 4) + (newState.grasasConsumidas * 9)
-        val caloriasNetas = caloriasConsumidas - caloriasQuemadas
-        val progresoProteinas = (newState.proteinasConsumidas.toFloat() / newState.metaProteinas.toFloat()).coerceIn(0f, 1f)
-        val progresoCarbos = (newState.carbosConsumidos.toFloat() / newState.metaCarbos.toFloat()).coerceIn(0f, 1f)
-        val progresoGrasas = (newState.grasasConsumidas.toFloat() / newState.metaGrasas.toFloat()).coerceIn(0f, 1f)
 
+        val proteinasConsumidas = newState.listaComidas.sumOf {
+            (it.alimento.proteinasPor100g * (it.cantidadEnGramos / 100.0)).toInt()
+        }
+        val carbosConsumidos = newState.listaComidas.sumOf {
+            (it.alimento.carbosPor100g * (it.cantidadEnGramos / 100.0)).toInt()
+        }
+        val grasasConsumidas = newState.listaComidas.sumOf {
+            (it.alimento.grasasPor100g * (it.cantidadEnGramos / 100.0)).toInt()
+        }
+        val caloriasConsumidas = (proteinasConsumidas * 4) + (carbosConsumidos * 4) + (grasasConsumidas * 9)
+        val caloriasNetas = caloriasConsumidas - caloriasQuemadas
+        val progresoCalorias = (caloriasNetas.toFloat() / newState.metaCalorias.toFloat()).coerceIn(0f, 1f)
+        val progresoProteinas = (proteinasConsumidas.toFloat() / newState.metaProteinas.toFloat()).coerceIn(0f, 1f)
+        val progresoCarbos = (carbosConsumidos.toFloat() / newState.metaCarbos.toFloat()).coerceIn(0f, 1f)
+        val progresoGrasas = (grasasConsumidas.toFloat() / newState.metaGrasas.toFloat()).coerceIn(0f, 1f)
         uiState = newState.copy(
+            proteinasConsumidas = proteinasConsumidas,
+            carbosConsumidos = carbosConsumidos,
+            grasasConsumidas = grasasConsumidas,
             caloriasQuemadas = caloriasQuemadas,
             caloriasConsumidas = caloriasConsumidas,
             caloriasNetas = caloriasNetas,
+            progresoCalorias = progresoCalorias,
             progresoProteinas = progresoProteinas,
             progresoCarbos = progresoCarbos,
             progresoGrasas = progresoGrasas
+
         )
     }
 }

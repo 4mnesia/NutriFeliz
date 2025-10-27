@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -70,7 +71,7 @@ fun TransicionLogin(navController: NavController, username: String) {
     var showContent by remember { mutableStateOf(false) }
     val randomFact = remember { nutritionFacts.random() }
     
-    var textLength by remember { mutableStateOf(0) }
+    var textLength by remember { mutableIntStateOf(0) }
     var startProgress by remember { mutableStateOf(false) }
 
     val infiniteTransition = rememberInfiniteTransition(label = "NutriaPulse")
@@ -97,7 +98,6 @@ fun TransicionLogin(navController: NavController, username: String) {
         startProgress = true
         delay(2000)
 
-        // CORREGIDO: Navega a la HomeScreen PASANDO el nombre de usuario
         navController.navigate(NavItem.Home.route + "/$username") {
             popUpTo(NavItem.Login.route) { inclusive = true }
             launchSingleTop = true

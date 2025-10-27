@@ -14,6 +14,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.forEach
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,11 +39,19 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.outlined.Fastfood
+import androidx.compose.material.icons.outlined.Nightlight
+import androidx.compose.material.icons.outlined.Restaurant
+import androidx.compose.material.icons.outlined.WbSunny
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +68,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -75,14 +85,13 @@ import com.example.nutriapp.model.home.*
 
 //Components
 @Composable
-fun MainBox(   currentCalories: Int = 0,
-               goalCalories: Int = 2000,
-               maxCalories: Int = 2200
+fun MainBox(   currentCalories: Int ,
+               goalCalories: Int ,
+               maxCalories: Int,
+               progress: Float,
 ){
     val colorText = MaterialTheme.colorScheme.onBackground
     val colorText1 = MaterialTheme.colorScheme.tertiary
-    val progress by remember { mutableFloatStateOf(currentCalories.toFloat() / goalCalories.toFloat()) }
-
     Column(Modifier
         .size(width = 400.dp, height = 150.dp)
         .border(
@@ -262,34 +271,93 @@ fun ActionRegister(
 
 }
 @Composable
-fun FoodRegister(onAgregarClick: () -> Unit) {
+fun FoodRegister(
+    listaComidas: List<ComidaAlacenada>,
+    onAgregarClick: () -> Unit,
+    onBorrarComida: (ComidaAlacenada) -> Unit
+) {
     val colorText1 = MaterialTheme.colorScheme.tertiary
     Row(modifier = Modifier.fillMaxWidth()) {
         MyText(text = "Hoy", color = colorText1, fontSize = 17.sp)
         Butons(start = 250.dp,onClick = {onAgregarClick()})
     }
-    //Ultimo target
-    Row (modifier = Modifier
-        .size(width = 400.dp, height = 150.dp)
-        .border(
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
-            shape = RoundedCornerShape(10.dp)
-        )
-        .background(
-            color = MaterialTheme.colorScheme.primary,
-            shape = RoundedCornerShape(size = 10.dp)
-        ),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically){
-        Column (Modifier.width(IntrinsicSize.Max),
-            horizontalAlignment = Alignment.CenterHorizontally){
-            MyText("No has registrado comidas hoy", color = colorText1, textAlign=TextAlign.Center, fontSize = 17.sp, modifier = Modifier.fillMaxWidth())
-            MyText("¡Comienza agregando tu primera comida!", color = colorText1, textAlign=TextAlign.Center, modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp))
+    if (listaComidas.isEmpty()) {
+        Row (modifier = Modifier
+            .size(width = 400.dp, height = 150.dp)
+            .border(
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
+                shape = RoundedCornerShape(10.dp)
+            )
+            .background(
+                color = MaterialTheme.colorScheme.primary,
+                shape = RoundedCornerShape(size = 10.dp)
+            ),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically) {
+            Column(
+                Modifier.width(IntrinsicSize.Max),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                MyText(
+                    "No has registrado comidas hoy",
+                    color = colorText1,
+                    textAlign = TextAlign.Center,
+                    fontSize = 17.sp,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                MyText(
+                    "¡Comienza agregando tu primera comida!",
+                    color = colorText1,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
+                )
+            }
+
+        }
+    }else {
+        val comidasAlmacenadas = listaComidas.groupBy { it.tipoDeComida }
+        LazyColumn(
+            modifier = Modifier.heightIn(max = 400.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            comidasAlmacenadas.forEach { (tipoComida, comidasDelTipo) ->
+
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                MaterialTheme.colorScheme.primary,
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(16.dp)
+                    ) {
+                        val icon = when (tipoComida) {
+                            "Desayuno" -> Icons.Outlined.WbSunny
+                            "Almuerzo" -> Icons.Outlined.Restaurant
+                            "Cena" -> Icons.Outlined.Nightlight
+                            else -> Icons.Outlined.Fastfood
+                        }
+                        MealTypeHeader(title = tipoComida, icon = icon)
+                        comidasDelTipo.forEach { comida ->
+                            FoodItemRow(comida = comida, onDelete = { onBorrarComida(comida) })
+                            if (comida != comidasDelTipo.last()) {
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                    thickness = DividerDefaults.Thickness,
+                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
+
 
 @SuppressLint("ModifierFactoryExtensionFunction")
 @Composable
@@ -811,6 +879,66 @@ fun ActividadGuardadaItem(
                 contentDescription = "Borrar actividad",
                 tint = Color.Red
             )
+        }
+    }
+}
+@Composable
+fun MealTypeHeader(title: String, icon: ImageVector) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = title,
+            tint = MaterialTheme.colorScheme.tertiary,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = title, color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.Bold)
+    }
+}
+@SuppressLint("DefaultLocale")
+@Composable
+fun FoodItemRow(
+    comida: ComidaAlacenada,
+    onDelete: () -> Unit
+) {
+    val nutrientes = remember(comida) {
+        val ratio = comida.cantidadEnGramos / 100.0f
+        NutrientesCalculados(
+            calorias = (comida.alimento.caloriasPor100g * ratio).toInt(),
+            proteinas = comida.alimento.proteinasPor100g * ratio,
+            carbos = comida.alimento.carbosPor100g * ratio,
+            grasas = comida.alimento.grasasPor100g * ratio
+        )
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = "${comida.alimento.nombre} (${comida.cantidadEnGramos}g)",
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                buildAnnotatedString {
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append("${nutrientes.calorias} cal")
+                    }
+                    append(" • ${String.format("%.1f", nutrientes.proteinas)}g P")
+                    append(" • ${String.format("%.1f", nutrientes.carbos)}g C")
+                    append(" • ${String.format("%.1f", nutrientes.grasas)}g G")
+                },
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+            )
+        }
+        IconButton(onClick = onDelete) {
+            Icon(Icons.Default.DeleteOutline, contentDescription = "Borrar", tint = Color.Red.copy(alpha = 0.8f))
         }
     }
 }
