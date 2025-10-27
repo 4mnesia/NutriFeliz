@@ -37,15 +37,30 @@ fun TopBar(isClicked: Boolean,user: String,
             }
         },
         actions = {
-            IconButton(
-                onClick = onTheme
-            ) {
-                Icon(
-                    imageVector = if (isClicked) Icons.Outlined.DarkMode else Icons.Outlined.LightMode,
-                    contentDescription = "Color Changing",
-                    tint = if (isClicked) ternaryColor else ternaryColor
-                )
+            Row {
+                IconButton(
+                    onClick = onTheme
+                ) {
+                    Icon(
+                        imageVector = if (isClicked) Icons.Outlined.DarkMode else Icons.Outlined.LightMode,
+                        contentDescription = "Color Changing",
+                        tint = if (isClicked) ternaryColor else ternaryColor
+                    )
+                }
+                IconButton(
+                    onClick ={
+                        navController?.navigate(NavItem.Settings.route)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Settings ,
+                        contentDescription = "Color Changing",
+                        tint = ternaryColor
+                    )
+                }
+
             }
+
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = primaryColor
