@@ -209,22 +209,22 @@ fun ActionRegister(
     onActividadGuardada: (tipo: String, duracion: Int) -> Unit,
     onActividadBorrada: (actividad: Actividad) -> Unit
 ){
-    val colorText1 = MaterialTheme.colorScheme.tertiary
-    val colorText = MaterialTheme.colorScheme.onBackground
+    //val colorText1 = MaterialTheme.colorScheme.tertiary
+    //val colorText = MaterialTheme.colorScheme.onBackground
     Column(modifier = myBoxModifier(formularioAbierto )) {
         Row (modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 2.dp),
+            .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically){
             Box(modifier = Modifier.padding(top=10.dp)){
                 Row(verticalAlignment = Alignment.CenterVertically){
                     Icon(painter = painterResource(R.drawable.mancuerna),
                         "",
                         modifier = Modifier.size(50.dp),
-                        tint = MaterialTheme.colorScheme.surface)
+                        tint = MaterialTheme.colorScheme.background)
                     Column{
-                        MyText(text = "Actividad Física", color = colorText1, fontSize = 17.sp)
-                        MyText("$caloriasQuemadas calorías quemadas", colorText)
+                        MyText(text = "Actividad Física")//, color = colorText1, fontSize = 17.sp)
+                        MyText("$caloriasQuemadas calorías quemadas") //colorText)
                     }
                 }
             }
@@ -249,10 +249,11 @@ fun ActionRegister(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        MyText("No hay actividades registradas hoy", color = colorText1)
+                        MyText("No hay actividades registradas hoy")//, color = colorText1)
                     }
                 } else {
                     LazyColumn(modifier = Modifier
+
                         .heightIn(max = 400.dp)) {
                         items(actividades, key = { it.id }) { actividad ->
                             ActividadGuardadaItem(
@@ -475,7 +476,7 @@ fun FormACtivity(clicked: Boolean,
             modifier = Modifier
                 .width(300.dp)
                 .background(
-                    color = MaterialTheme.colorScheme.onSecondary,
+                    color = MaterialTheme.colorScheme.background,
                     shape = RoundedCornerShape(size = 10.dp)
                 )
                 .padding(16.dp),
@@ -717,7 +718,7 @@ fun ResultadoBusquedaItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .background(if (estaSeleccionado) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else Color.Transparent)
+            //.background(if (estaSeleccionado) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else Color.Transparent)
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -727,14 +728,14 @@ fun ResultadoBusquedaItem(
             Text(
                 text = "Por 100g: ${alimento.caloriasPor100g} cal • ${alimento.proteinasPor100g}g P • ${alimento.carbosPor100g}g C • ${alimento.grasasPor100g}g G",
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                //color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
         }
         if (estaSeleccionado) {
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = "Seleccionado",
-                tint = MaterialTheme.colorScheme.tertiary,
+                //tint = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.padding(start = 8.dp)
             )
         }
@@ -755,7 +756,7 @@ fun ValoresNutricionalesCalculados(nutrientes: NutrientesCalculados) {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("Valores: ", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+        Text("Valores: ", style = MaterialTheme.typography.bodySmall)//, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
         Text(
             buildAnnotatedString {
                 withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
@@ -765,7 +766,7 @@ fun ValoresNutricionalesCalculados(nutrientes: NutrientesCalculados) {
                 append(" • ${String.format("%.1f", nutrientes.carbos)}g C")
                 append(" • ${String.format("%.1f", nutrientes.grasas)}g G")
             },
-            color = MaterialTheme.colorScheme.onSurface,
+            //color = MaterialTheme.colorScheme.onSurface,
             fontSize = 13.sp
         )
     }
@@ -790,7 +791,7 @@ fun ActividadGuardadaItem(
             Icon(
                 painter = painterResource(R.drawable.mancuerna),
                 contentDescription = "Actividad física",
-                tint = MaterialTheme.colorScheme.tertiary,
+                //tint = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier.size(32.dp)
             )
 
@@ -799,7 +800,7 @@ fun ActividadGuardadaItem(
             Column {
                 MyText(
                     text = actividad.tipo,
-                    color = MaterialTheme.colorScheme.tertiary,
+                    //color = MaterialTheme.colorScheme.tertiary,
                     fontSize = 16.sp
                 )
                 Row(
@@ -813,20 +814,20 @@ fun ActividadGuardadaItem(
                 ) {
                     MyText(
                         text = "${actividad.duracion} min",
-                        color = MaterialTheme.colorScheme.onSecondary,
+                        //color = MaterialTheme.colorScheme.onSecondary,
                         fontSize = 14.sp
                     )
                     Spacer(Modifier.width(8.dp))
                     Icon(
                         painter = painterResource(R.drawable.large),
                         contentDescription = "Calorías",
-                        tint = MaterialTheme.colorScheme.onSecondary,
+                        //tint = MaterialTheme.colorScheme.onSecondary,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(Modifier.width(4.dp))
                     MyText(
                         text = actividad.calorias.toString(),
-                        color = MaterialTheme.colorScheme.onSecondary,
+                        //color = MaterialTheme.colorScheme.onSecondary,
                         fontSize = 14.sp
                     )
                 }
@@ -838,7 +839,7 @@ fun ActividadGuardadaItem(
             Icon(
                 imageVector = Icons.Default.Delete,
                 contentDescription = "Borrar actividad",
-                tint = MaterialTheme.colorScheme.error
+                //tint = MaterialTheme.colorScheme.error
             )
         }
     }
@@ -852,11 +853,11 @@ fun MealTypeHeader(title: String, icon: ImageVector) {
         Icon(
             imageVector = icon,
             contentDescription = title,
-            tint = MaterialTheme.colorScheme.tertiary,
+            //tint = MaterialTheme.colorScheme.tertiary,
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = title, color = MaterialTheme.colorScheme.tertiary, fontWeight = FontWeight.Bold)
+        Text(text = title, /*color = MaterialTheme.colorScheme.tertiary*/ fontWeight = FontWeight.Bold)
     }
 }
 @SuppressLint("DefaultLocale")
@@ -883,7 +884,7 @@ fun FoodItemRow(
         Column {
             Text(
                 text = "${comida.alimento.nombre} (${comida.cantidadEnGramos}g)",
-                color = MaterialTheme.colorScheme.onBackground
+                //color = MaterialTheme.colorScheme.onBackground
             )
             Text(
                 buildAnnotatedString {
@@ -895,7 +896,7 @@ fun FoodItemRow(
                     append(" • ${String.format("%.1f", nutrientes.grasas)}g G")
                 },
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                //color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
         }
         IconButton(onClick = onDelete) {
