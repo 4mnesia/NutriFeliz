@@ -101,7 +101,7 @@ fun NavigationApp(
                         arguments = listOf(navArgument("username") { type = NavType.StringType })
                     ) { backStackEntry ->
                         val user = backStackEntry.arguments?.getString("username") ?: "Usuario"
-                        ProgressScreen(username = user)
+                        ProgressScreen(username = user, homeViewModel = homeViewModel)
                     }
                     composable(
                         route = NavItem.Profile.route + "/{username}",
@@ -111,6 +111,7 @@ fun NavigationApp(
                         ProfileScreen(
                             username = user,
                             navController = navController,
+                            homeViewModel = homeViewModel,
                             onLogout = {
                                 navController.navigate(NavItem.Login.route) {
                                     popUpTo(navController.graph.id) {

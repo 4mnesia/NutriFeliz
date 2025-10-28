@@ -17,6 +17,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -24,11 +26,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.nutriapp.viewmodel.home.HomeViewModel
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 
 @Composable
-fun ProgressScreen(username: String) {
+fun ProgressScreen(username: String, homeViewModel: HomeViewModel) {
+    val uiState by homeViewModel.uiState.collectAsState()
+
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -40,23 +50,28 @@ fun ProgressScreen(username: String) {
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // Placeholder for a bar chart
-        BarChartPlaceholder()
+        // Gráfico circular conectado al ViewModel
+        CircularChart(
+            proteinas = uiState.proteinasConsumidas.toFloat(),
+            grasas = uiState.grasasConsumidas.toFloat(),
+            carbos = uiState.carbosConsumidos.toFloat()
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Placeholder for a line chart
-        LineChartPlaceholder()
+        // Gráfico de barras semanal conectado al ViewModel
+        WeeklyBarChart(weeklyCalories = uiState.weeklyCalories, goalCalories = uiState.metaCalorias)
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Placeholder for a circular chart
-        CircularChartPlaceholder()
+        WeightLineChart(monthlyWeight = uiState.monthlyWeight)
     }
 }
 
 @Composable
-fun BarChartPlaceholder() {
+fun WeeklyBarChart(weeklyCalories: Map<DayOfWeek, Int>, goalCalories: Int) {
+    val today = LocalDate.now().dayOfWeek
+
     Column {
         Text(text = "Consumo de Calorías Semanal", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
@@ -65,21 +80,30 @@ fun BarChartPlaceholder() {
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.Bottom
         ) {
-            Bar(0.6f, "Lun")
-            Bar(0.8f, "Mar")
-            Bar(0.5f, "Mié")
-            Bar(0.7f, "Jue")
-            Bar(0.9f, "Vie")
-            Bar(0.4f, "Sáb")
-            Bar(0.6f, "Dom")
+            DayOfWeek.values().forEach { day ->
+                val calories = weeklyCalories[day] ?: 0
+                val progress = (calories.toFloat() / goalCalories.toFloat()).coerceIn(0f, 1f)
+                Bar(
+                    calories = calories,
+                    heightFraction = progress,
+                    label = day.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
+                    isToday = day == today
+                )
+            }
         }
     }
 }
 
 @Composable
-fun Bar(heightFraction: Float, label: String) {
-    val barColor = MaterialTheme.colorScheme.primary
+fun Bar(calories: Int, heightFraction: Float, label: String, isToday: Boolean) {
+    val barColor = if (isToday) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = calories.toString(),
+            fontSize = 10.sp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
         Canvas(
             modifier = Modifier
                 .height(100.dp)
@@ -91,15 +115,25 @@ fun Bar(heightFraction: Float, label: String) {
                 size = androidx.compose.ui.geometry.Size(size.width, size.height * heightFraction)
             )
         }
-        Text(text = label, style = MaterialTheme.typography.bodySmall)
+        Text(text = label, style = MaterialTheme.typography.bodySmall, color = if (isToday) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface)
     }
 }
 
 @Composable
-fun LineChartPlaceholder() {
+fun WeightLineChart(monthlyWeight: Map<LocalDate, Float>) {
     Column {
-        Text(text = "Pérdida de Peso Mensual", style = MaterialTheme.typography.titleMedium)
+        Text(text = "Evolución de Peso", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
+
+        if (monthlyWeight.size < 2) {
+            Text(
+                text = "Necesitas registrar al menos dos pesos para ver tu progreso.",
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp)
+            )
+            return
+        }
 
         val gridColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
         val lineColor = MaterialTheme.colorScheme.secondary
@@ -107,13 +141,20 @@ fun LineChartPlaceholder() {
         Canvas(modifier = Modifier
             .fillMaxWidth()
             .height(150.dp)) {
-            val points = listOf(
-                Offset(0f, size.height * 0.2f),
-                Offset(size.width * 0.25f, size.height * 0.4f),
-                Offset(size.width * 0.5f, size.height * 0.3f),
-                Offset(size.width * 0.75f, size.height * 0.6f),
-                Offset(size.width, size.height * 0.5f)
-            )
+            val sortedData = monthlyWeight.entries.sortedBy { it.key }
+            val maxDay = sortedData.last().key.toEpochDay()
+            val minDay = sortedData.first().key.toEpochDay()
+            val dayRange = (maxDay - minDay).toFloat().coerceAtLeast(1f)
+
+            val maxWeight = monthlyWeight.values.maxOrNull() ?: 0f
+            val minWeight = monthlyWeight.values.minOrNull() ?: 0f
+            val weightRange = (maxWeight - minWeight).coerceAtLeast(1f)
+
+            val points = sortedData.map { (date, weight) ->
+                val x = if (dayRange > 0) ((date.toEpochDay() - minDay).toFloat() / dayRange) * size.width else 0f
+                val y = if (weightRange > 0) size.height - ((weight - minWeight) / weightRange) * size.height else size.height / 2
+                Offset(x, y)
+            }
 
             // Draw grid lines
             for (i in 0..4) {
@@ -127,32 +168,34 @@ fun LineChartPlaceholder() {
             }
 
             // Draw the line chart
-            for (i in 0 until points.size - 1) {
-                drawLine(
-                    color = lineColor,
-                    start = points[i],
-                    end = points[i+1],
-                    strokeWidth = 5f
-                )
+            if (points.size > 1) {
+                for (i in 0 until points.size - 1) {
+                    drawLine(
+                        color = lineColor,
+                        start = points[i],
+                        end = points[i + 1],
+                        strokeWidth = 5f
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun CircularChartPlaceholder() {
+fun CircularChart(proteinas: Float, grasas: Float, carbos: Float) {
     val proteinColor = MaterialTheme.colorScheme.primary
     val fatColor = MaterialTheme.colorScheme.secondary
     val carbsColor = MaterialTheme.colorScheme.tertiary
 
     val nutrientData = listOf(
-        NutrientData("Proteína", 120f, proteinColor),
-        NutrientData("Grasa", 70f, fatColor),
-        NutrientData("Carbs", 250f, carbsColor)
+        NutrientData("Proteína", proteinas, proteinColor),
+        NutrientData("Grasa", grasas, fatColor),
+        NutrientData("Carbs", carbos, carbsColor)
     )
 
-    val totalCalories = (nutrientData[0].value * 4) + (nutrientData[1].value * 9) + (nutrientData[2].value * 4)
-    val totalGrams = nutrientData.sumOf { it.value.toDouble() }.toFloat()
+    val totalCalories = (proteinas * 4) + (grasas * 9) + (carbos * 4)
+    val totalGrams = (proteinas + grasas + carbos).coerceAtLeast(1f)
 
     Column {
         Text(text = "Distribución de Macronutrientes", style = MaterialTheme.typography.titleMedium)
