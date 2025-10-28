@@ -463,7 +463,7 @@ fun FormACtivity(clicked: Boolean,
                  onGuardar: (tipo: String, duracion: Int) -> Unit,
                  onCancel: () -> Unit
 ) {
-    val ejercicios = listOf("Correr", "Caminar", "Nadar", "Bicicleta", "Gimnasio")
+    val ejercicios = listOf("Correr", "Caminar", "Nadar", "Bicicleta", "Gimnasio", "Deporte")
     var tipoEjercicio by remember { mutableStateOf(ejercicios[0]) }
     var expanded by remember { mutableStateOf(false) }
     var duracion by remember { mutableStateOf("30") }
