@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.example.nutriapp"
-    compileSdk = 36
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.nutriapp"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -27,13 +27,13 @@ android {
             )
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
+    // --- CORRECCIÓN: Eliminamos este bloque ---
+    // compileOptions {
+    //     sourceCompatibility = JavaVersion.VERSION_17
+    //     targetCompatibility = JavaVersion.VERSION_17
+    // }
+    // --- FIN DE LA CORRECCIÓN ---
+
     buildFeatures {
         compose = true
     }
@@ -50,9 +50,9 @@ dependencies {
     implementation(libs.androidx.material3)
 
 
-    implementation("com.patrykandpatrick.vico:core:1.15.0")
-    implementation("com.patrykandpatrick.vico:compose:1.15.0")
-    implementation("com.patrykandpatrick.vico:compose-m3:1.15.0") // Para integración con Material 3
+    // Estas líneas ya están correctas y usan tu libs.versions.toml
+    implementation(libs.vico.core)
+    implementation(libs.compose.m3)
 
 
     testImplementation(libs.junit)
@@ -63,3 +63,9 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
+
+// --- CORRECCIÓN: Agregamos este bloque al final ---
+kotlin {
+    jvmToolchain(17)
+}
+// --- FIN DE LA CORRECCIÓN ---

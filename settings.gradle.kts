@@ -17,7 +17,14 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
     }
+    // ⬅️ El bloque "plugins" NO va aquí.
 }
 
-rootProject.name = "NutriApp"
+// --- CORRECCIÓN: El bloque va aquí, al nivel principal ---
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
+}
+// --- FIN DE LA CORRECCIÓN ---
+
+rootProject.name = "NutriApp" // (Tu proyecto se llamaba NutriFeliz antes, pero esto está bien)
 include(":app")

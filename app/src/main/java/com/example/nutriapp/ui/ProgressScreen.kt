@@ -1,12 +1,20 @@
-// ... (importaciones existentes)
-// Nuevas importaciones para Vico
 package com.example.nutriapp.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -15,15 +23,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.nutriapp.ui.theme.NutriAppTheme
+
+// --- INICIO DE IMPORTS CORREGIDOS ---
+// (Estos son para Vico 2.0.0-alpha.22)
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
+import com.patrykandpatrick.vico.compose.component.shape.dashed.dashedShape // Corregido
+import com.patrykandpatrick.vico.compose.component.text.rememberTextComponent // Corregido
 import com.patrykandpatrick.vico.core.axis.AxisPosition
 import com.patrykandpatrick.vico.core.axis.formatter.AxisValueFormatter
 import com.patrykandpatrick.vico.core.chart.line.LineChart
+import com.patrykandpatrick.vico.core.component.shape.LineShape // Corregido
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
+// --- FIN DE IMPORTS CORREGIDOS ---
 
 @Composable
 fun ProgressScreen() {
@@ -53,40 +68,53 @@ fun ProgressScreen() {
 
 @Composable
 fun WeeklyProgressChart() {
-    //1. Prepara los datos del gráfico con ChartEntryModelProducer
     val chartEntryModelProducer = ChartEntryModelProducer(
-        // Datos de ejemplo para cada línea
         listOf(
-            // ... (tus datos no cambian)
-            listOf(entryOf(0, 1800), entryOf(1, 2200), entryOf(2, 2100), entryOf(3, 2300), entryOf(4, 2250), entryOf(5, 2400), entryOf(6, 1800)),
-            listOf(entryOf(0, 30), entryOf(1, 45), entryOf(2, 20), entryOf(3, 60), entryOf(4, 40), entryOf(5, 50), entryOf(6, 30)),
+            // Calorías (naranja)
+            listOf(entryOf(0, 1500), entryOf(1, 1600), entryOf(2, 1550), entryOf(3, 1700), entryOf(4, 1650), entryOf(5, 1800), entryOf(6, 1750)),
+            // Ejercicio (morado)
+            listOf(entryOf(0, 20), entryOf(1, 30), entryOf(2, 25), entryOf(3, 120), entryOf(4, 30), entryOf(5, 45), entryOf(6, 15)),
+            // Peso (azul)
             listOf(entryOf(0, 70), entryOf(1, 70.2f), entryOf(2, 70.1f), entryOf(3, 69.8f), entryOf(4, 69.7f), entryOf(5, 69.5f), entryOf(6, 69.4f)),
+            // Proteínas (rojo)
             listOf(entryOf(0, 120), entryOf(1, 130), entryOf(2, 125), entryOf(3, 140), entryOf(4, 135), entryOf(5, 145), entryOf(6, 120))
         )
     )
 
-    // 2. Formateador para el eje X (días de la semana)
     val bottomAxisValueFormatter = AxisValueFormatter<AxisPosition.Horizontal.Bottom> { value, _ ->
         val days = listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
         days.getOrElse(value.toInt()) { "" }
     }
 
-    // 3. Dibuja el gráfico
     Chart(
         chart = lineChart(
             lines = listOf(
-                // FIX: Convert the Compose Color to an integer ARGB value
-                LineChart.LineSpec(lineColor = Color(0xFFFFA500).toArgb()), // Naranja para Calorías
-                LineChart.LineSpec(lineColor = Color(0xFF8A2BE2).toArgb()), // Morado para Ejercicio
-                LineChart.LineSpec(lineColor = Color(0xFF1E90FF).toArgb()), // Azul para Peso
-                LineChart.LineSpec(lineColor = Color.Red.toArgb())          // Rojo para Proteínas
+                LineChart.LineSpec(lineColor = Color(0xFFFFA500).toArgb()), // Naranja
+                LineChart.LineSpec(lineColor = Color(0xFF8A2BE2).toArgb()), // Morado
+                LineChart.LineSpec(lineColor = Color(0xFF1E90FF).toArgb()), // Azul
+                LineChart.LineSpec(lineColor = Color.Red.toArgb())          // Rojo
             )
         ),
         chartModelProducer = chartEntryModelProducer,
-        startAxis = rememberStartAxis(),
+        startAxis = rememberStartAxis(
+            label = rememberTextComponent(color = Color.White),
+            axis = null,
+            tick = null,
+            // --- CORRECCIÓN APLICADA ---
+            guideline = dashedShape(
+                shape = LineShape, // Corregido (sin "Shapes.")
+                dashLength = 4.dp,
+                gapLength = 4.dp,
+                color = Color(0x40FFFFFF) // Blanco translúcido
+            )
+            // --- FIN DE LA CORRECCIÓN ---
+        ),
         bottomAxis = rememberBottomAxis(
             valueFormatter = bottomAxisValueFormatter,
-            guideline = null
+            guideline = null,
+            label = rememberTextComponent(color = Color.White),
+            axis = null,
+            tick = null
         ),
         modifier = Modifier
             .fillMaxWidth()
@@ -97,12 +125,11 @@ fun WeeklyProgressChart() {
 
 @Composable
 fun ChartLegend() {
-    // Usamos FlowRow para que la leyenda se ajuste automáticamente si no cabe en una línea
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp), // Espacio entre el gráfico y la leyenda
-        horizontalArrangement = Arrangement.SpaceEvenly // Distribuye el espacio equitativamente
+            .padding(top = 16.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         LegendItem(color = Color(0xFFFFA500), text = "Calorías")
         LegendItem(color = Color(0xFF8A2BE2), text = "Ejercicio (min)")
@@ -114,16 +141,14 @@ fun ChartLegend() {
 @Composable
 fun LegendItem(color: Color, text: String) {
     Row(
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(horizontal = 4.dp)
     ) {
-        // El pequeño círculo de color
         Box(
             modifier = Modifier
                 .size(8.dp)
-                .background(color, shape = androidx.compose.foundation.shape.CircleShape)
+                .background(color, shape = CircleShape)
         )
-        // El texto de la leyenda
         Text(
             text = text,
             color = Color.White,
@@ -133,12 +158,10 @@ fun LegendItem(color: Color, text: String) {
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun ProgressScreenPreview() {
-    // Make sure the theme name here is also correct.
-    NutriAppTheme { // <--- Corrected name
+    NutriAppTheme {
         ProgressScreen()
     }
 }
