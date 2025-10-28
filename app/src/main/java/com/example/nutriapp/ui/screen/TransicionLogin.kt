@@ -136,7 +136,7 @@ fun TransicionLogin(navController: NavController, username: String) {
                     text = randomFact.substring(0, textLength),
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.height(80.dp)
                 )
                 Spacer(modifier = Modifier.height(32.dp))
