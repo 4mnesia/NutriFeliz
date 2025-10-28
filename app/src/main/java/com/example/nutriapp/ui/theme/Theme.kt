@@ -34,7 +34,7 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = PurpuraDarkOnSurface,
 )
 
-private val LightColorScheme = lightColorScheme(
+private val LightRosaColorScheme = lightColorScheme(
     primary = PredeterminadoLightPrimary,
     onPrimary = PredeterminadoLightOnPrimary,
     secondary = PredeterminadoLightSecondary,
@@ -47,7 +47,7 @@ private val LightColorScheme = lightColorScheme(
     onSurface = PredeterminadoLightOnSurface,
 )
 
-private val LightRosaColorScheme = lightColorScheme(
+private val LightColorScheme = lightColorScheme(
     primary = RosaClaroPrimary,       // Fondo azul para la TopBar
     secondary = RosaClaroSurface,
     tertiary = Color.White,            // Texto e iconos blancos para que contrasten
@@ -79,36 +79,40 @@ fun NutriAppTheme(
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
+    val context = LocalContext.current
 
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> when (colorProfile) {
-            ColorProfile.PREDETERMINADO -> DarkColorScheme
-            ColorProfile.ROSA -> DarkRosaColorScheme
-            else -> DarkColorScheme
-        }
-        else -> when (colorProfile) {
-            ColorProfile.PREDETERMINADO -> LightColorScheme
-            ColorProfile.ROSA -> LightRosaColorScheme
-            else -> LightColorScheme
-        }
+    // --- Selecciona esquema base según colorProfile ---
+    val baseColorScheme = when (colorProfile) {
+        ColorProfile.PREDETERMINADO -> if (darkTheme) DarkColorScheme else LightColorScheme
+        ColorProfile.ROSA -> if (darkTheme) DarkRosaColorScheme else LightRosaColorScheme
+        else -> if (darkTheme) DarkColorScheme else LightColorScheme
     }
-    @Suppress("DEPRECATION")
+
+    // --- Si se usan colores dinámicos (Android 12+) ---
+    val colorScheme = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    } else {
+        baseColorScheme
+    }
+
+    // --- Configuración de la barra de estado ---
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = Color.Transparent.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            WindowCompat.getInsetsController(window, view)
+                .isAppearanceLightStatusBars = !darkTheme
         }
     }
 
+    // --- Aplicar el tema final ---
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
         content = content
     )
 }
+
+
+

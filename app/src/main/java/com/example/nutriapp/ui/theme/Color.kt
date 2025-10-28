@@ -11,7 +11,7 @@ val RosaClaroOnBackground = Color.Black
 // --- Perfil Rosa: Oscuro ---
 val RosaOscuroBackground = Color(0xFF3C2F34)
 val RosaOscuroSurface = Color(0xFF503E46)
-val RosaOscuroPrimary = Color(0xFFE5A9B4)
+val RosaOscuroPrimary = Color(0xFFB93E6B)
 val RosaOscuroSecondary = Color(0xFFB58E97)
 val RosaOscuroOnBackground = Color(0xFFFFF0F2)
 
@@ -19,7 +19,7 @@ val RosaOscuroOnBackground = Color(0xFFFFF0F2)
 // --- PREDETERMINADO: MODO OSCURO (PÚRPURA MEJORADO) ---
 val PurpuraDarkBackground = Color(0xFF1A0F2E)     // Fondo: Púrpura muy oscuro
 val PurpuraDarkSurface = Color(0xFF251740)        // Tarjetas: Un púrpura más claro que el fondo
-val PurpuraDarkPrimary = Color(0xFF380D9F)        // Botones y acentos principales (Lavanda)
+val PurpuraDarkPrimary = Color(0xFF4C007D)        // Botones y acentos principales (Lavanda)
 val PurpuraDarkOnPrimary = Color(0xFFFFFFFF)       // Texto sobre botones
 val PurpuraDarkSecondary = Color(0xFF3F2E65)      // Bordes y acentos sutiles
 val PurpuraDarkTertiary = Color(0xFFEADDFF)        // Texto y acentos más claros (Lavanda extra pálido)
@@ -28,7 +28,7 @@ val PurpuraDarkOnSurface = Color(0xFFF7F2FF)      // Texto sobre tarjetas (Casi 
 
 
 // --- PREDETERMINADO: MODO CLARO (ROSADO) ---
-val PredeterminadoLightPrimary = Color(0xFFB93E6B)
+val PredeterminadoLightPrimary = Color(0xFFE5A9B4) //0xFFE5A9B4
 val PredeterminadoLightOnPrimary = Color(0xFFFFFFFF)
 val PredeterminadoLightSecondary = Color(0xFFF4D4DE)
 val PredeterminadoLightOnSecondary = Color(0xFF492532)
