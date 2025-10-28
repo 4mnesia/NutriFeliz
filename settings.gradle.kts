@@ -11,20 +11,21 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
     }
-    // ⬅️ El bloque "plugins" NO va aquí.
 }
 
-// --- CORRECCIÓN: El bloque va aquí, al nivel principal ---
+// --- CORRECCIÓN ---
+// Este bloque debe ir al nivel raíz, fuera de los anteriores.
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 // --- FIN DE LA CORRECCIÓN ---
 
-rootProject.name = "NutriApp" // (Tu proyecto se llamaba NutriFeliz antes, pero esto está bien)
+rootProject.name = "NutriApp"
 include(":app")

@@ -1,15 +1,7 @@
 package com.example.nutriapp.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -23,22 +15,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.nutriapp.ui.theme.NutriAppTheme
-
-// --- INICIO DE IMPORTS CORREGIDOS ---
-// (Estos son para Vico 2.0.0-alpha.22)
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
-import com.patrykandpatrick.vico.compose.component.shape.dashed.dashedShape // Corregido
-import com.patrykandpatrick.vico.compose.component.text.rememberTextComponent // Corregido
+import com.patrykandpatrick.vico.compose.component.shape.line.lineComponent
+import com.patrykandpatrick.vico.compose.component.text.rememberTextComponent
 import com.patrykandpatrick.vico.core.axis.AxisPosition
 import com.patrykandpatrick.vico.core.axis.formatter.AxisValueFormatter
 import com.patrykandpatrick.vico.core.chart.line.LineChart
-import com.patrykandpatrick.vico.core.component.shape.LineShape // Corregido
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
-// --- FIN DE IMPORTS CORREGIDOS ---
 
 @Composable
 fun ProgressScreen() {
@@ -98,23 +85,14 @@ fun WeeklyProgressChart() {
         chartModelProducer = chartEntryModelProducer,
         startAxis = rememberStartAxis(
             label = rememberTextComponent(color = Color.White),
-            axis = null,
-            tick = null,
-            // --- CORRECCIÓN APLICADA ---
-            guideline = dashedShape(
-                shape = LineShape, // Corregido (sin "Shapes.")
-                dashLength = 4.dp,
-                gapLength = 4.dp,
-                color = Color(0x40FFFFFF) // Blanco translúcido
+            guideline = lineComponent(
+                color = Color(0x40FFFFFF),
+                thickness = 1.dp
             )
-            // --- FIN DE LA CORRECCIÓN ---
         ),
         bottomAxis = rememberBottomAxis(
             valueFormatter = bottomAxisValueFormatter,
-            guideline = null,
-            label = rememberTextComponent(color = Color.White),
-            axis = null,
-            tick = null
+            label = rememberTextComponent(color = Color.White)
         ),
         modifier = Modifier
             .fillMaxWidth()

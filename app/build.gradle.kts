@@ -27,34 +27,44 @@ android {
             )
         }
     }
-    // --- CORRECCIÓN: Eliminamos este bloque ---
-    // compileOptions {
-    //     sourceCompatibility = JavaVersion.VERSION_17
-    //     targetCompatibility = JavaVersion.VERSION_17
-    // }
-    // --- FIN DE LA CORRECCIÓN ---
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 
     buildFeatures {
         compose = true
     }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.15"
+    }
 }
 
 dependencies {
+    // --- AndroidX base ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+
+    // --- Jetpack Compose ---
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    // --- Vico (gráficos) ---
+    implementation("com.patrykandpatrick.vico:core:1.14.0")
+    implementation("com.patrykandpatrick.vico:compose:1.14.0")
+    implementation("com.patrykandpatrick.vico:compose-m3:1.14.0")
 
-    // Estas líneas ya están correctas y usan tu libs.versions.toml
-    implementation(libs.vico.core)
-    implementation(libs.compose.m3)
-
-
+    // --- Testing ---
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -64,8 +74,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 }
 
-// --- CORRECCIÓN: Agregamos este bloque al final ---
+// --- Compatibilidad con Kotlin 2.0 y Java 17 ---
 kotlin {
     jvmToolchain(17)
 }
-// --- FIN DE LA CORRECCIÓN ---
