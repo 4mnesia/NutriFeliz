@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,6 +42,8 @@ fun ProgressScreen(username: String, homeViewModel: HomeViewModel) {
 
     Column(
         modifier = Modifier
+            .padding(16.dp)
+            .background(color = MaterialTheme.colorScheme.primary)
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
@@ -184,9 +187,9 @@ fun WeightLineChart(monthlyWeight: Map<LocalDate, Float>) {
 
 @Composable
 fun CircularChart(proteinas: Float, grasas: Float, carbos: Float) {
-    val proteinColor = MaterialTheme.colorScheme.primary
-    val fatColor = MaterialTheme.colorScheme.secondary
-    val carbsColor = MaterialTheme.colorScheme.tertiary
+    val proteinColor = MaterialTheme.colorScheme.background
+    val fatColor = MaterialTheme.colorScheme.onSecondary
+    val carbsColor = MaterialTheme.colorScheme.secondary
 
     val nutrientData = listOf(
         NutrientData("Proteína", proteinas, proteinColor),
