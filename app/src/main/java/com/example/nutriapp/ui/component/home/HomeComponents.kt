@@ -704,8 +704,18 @@ val baseDeDatosAlimentos = listOf(
     Alimento("Pan blanco", 265, 9f, 49f, 3.2f),
     Alimento("Aceite de Oliva", 884, 0f, 0f, 100f),
     Alimento("Salchicha", 301, 12f, 3f, 27f),
-    Alimento("Queso Cheddar", 404, 25f, 1.3f, 33f)
-)
+    Alimento("Queso Cheddar", 404, 25f, 1.3f, 33f),
+    Alimento("Pan de Pascua", 362, 9f, 61f, 9f),
+    Alimento("Palta", 160, 2f, 9f, 15f),
+    Alimento("Lechuga", 14, 1f, 3f, 0.1f),
+    Alimento("Carne de Res", 150, 22f, 0f, 7f),
+    Alimento("Fideos", 158, 6f, 31f, 0.9f),
+    Alimento("Manzana", 52, 0.3f, 14f, 0.2f),
+    Alimento("Galletas de Arroz", 392, 7f, 81f, 4f),
+    Alimento("Leche", 46, 3f, 5f, 1f),
+    Alimento("Yogurt Griego", 94, 9f, 5f, 4f),
+    Alimento("Papa Cocida", 87, 2f, 20f, 0.1f),
+    )
 
 
 @Composable
