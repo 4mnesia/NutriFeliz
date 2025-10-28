@@ -43,6 +43,7 @@ import androidx.compose.material.icons.outlined.Fastfood
 import androidx.compose.material.icons.outlined.Nightlight
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.WbSunny
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -81,10 +82,11 @@ import com.example.nutriapp.model.home.*
 
 //Components
 @Composable
-fun MainBox(   currentCalories: Int ,
-               goalCalories: Int ,
-               maxCalories: Int,
-               progress: Float,
+fun MainBox(
+    currentCalories: Int,
+    goalCalories: Int,
+    maxCalories: Int,
+    progress: Float,
 ){
     val colorText = MaterialTheme.colorScheme.onBackground
     val colorText1 = MaterialTheme.colorScheme.tertiary
@@ -230,10 +232,9 @@ fun ActionRegister(
                 Butons(start = 90.dp,onClick = onToggleFormulario)
             }
         }
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp),
+        Column(Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
             FormACtivity(
@@ -246,12 +247,13 @@ fun ActionRegister(
                     Column(
                         Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         MyText("No hay actividades registradas hoy", color = colorText1)
                     }
                 } else {
-                    LazyColumn {
+                    LazyColumn(modifier = Modifier
+                        .heightIn(max = 400.dp)) {
                         items(actividades, key = { it.id }) { actividad ->
                             ActividadGuardadaItem(
                                 actividad = actividad,
@@ -266,7 +268,6 @@ fun ActionRegister(
         }
 
     }
-
 }
 @Composable
 fun FoodRegister(
@@ -343,8 +344,8 @@ fun FoodRegister(
                             FoodItemRow(comida = comida, onDelete = { onBorrarComida(comida) })
                             if (comida != comidasDelTipo.last()) {
                                 HorizontalDivider(
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    thickness = DividerDefaults.Thickness, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
                                 )
                             }
                         }
@@ -358,34 +359,24 @@ fun FoodRegister(
 
 @SuppressLint("ModifierFactoryExtensionFunction")
 @Composable
-fun myBoxModifier(onClick: Boolean): Modifier {
-    if (!onClick) {
-        return Modifier
-            .width(400.dp)
-            .animateContentSize(animationSpec = tween(durationMillis = 800))
-            .height(150.dp)
-            .border(
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
-                shape = RoundedCornerShape(10.dp)
-            )
-            .background(
-                color = MaterialTheme.colorScheme.primary,
-                shape = RoundedCornerShape(size = 10.dp)
-            )
+fun myBoxModifier(isExpanded: Boolean): Modifier {val commonModifier = Modifier
+    .width(400.dp)
+    .animateContentSize(animationSpec = tween(durationMillis = 800))
+    .border(
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
+        shape = RoundedCornerShape(10.dp)
+    )
+    .background(
+        color = MaterialTheme.colorScheme.primary,
+        shape = RoundedCornerShape(size = 10.dp)
+    )
+    return if (isExpanded) {
+        commonModifier.height(IntrinsicSize.Max)
+    } else {
+        commonModifier.heightIn(min = 150.dp)
     }
-    return Modifier
-        .width(400.dp)
-        .animateContentSize(animationSpec = tween(durationMillis = 800))
-        .height(IntrinsicSize.Max)
-        .border(
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary),
-            shape = RoundedCornerShape(10.dp)
-        )
-        .background(
-            color = MaterialTheme.colorScheme.primary,
-            shape = RoundedCornerShape(size = 10.dp)
-        )
 }
+
 @Composable
 fun RowScope.TargetBox(
     titulo: String,
@@ -475,7 +466,6 @@ fun FormACtivity(clicked: Boolean,
     var tipoEjercicio by remember { mutableStateOf(ejercicios[0]) }
     var expanded by remember { mutableStateOf(false) }
     var duracion by remember { mutableStateOf("30") }
-
     AnimatedVisibility(
         visible = clicked,
         enter = expandVertically() + fadeIn(),
@@ -645,7 +635,7 @@ fun FormFood(
             }
             OutlinedTextField(
                 value = cantidad,
-                onValueChange = { it.filter { char -> char.isDigit() } },
+                onValueChange = { cantidad = it.filter { char -> char.isDigit() } },
                 label = { Text("Cantidad (gramos)") },
                 placeholder = { Text("Ej: 100") },
                 modifier = Modifier.fillMaxWidth(),

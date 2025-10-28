@@ -2,6 +2,8 @@ package com.example.nutriapp.ui.screen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -36,8 +38,9 @@ fun HomeScreen (
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
-                    .padding(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 MainBox(
@@ -85,7 +88,6 @@ fun HomeScreen (
                 )
             }
         }
-
         if (uiState.formularioComidaAbierto) {
             FormFood(
                 onDismiss = { homeViewModel.onToggleFormularioComida() },
