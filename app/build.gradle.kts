@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.compose) // Correcto, este es el nuevo plugin
 }
 
 android {
@@ -33,17 +33,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
-    buildFeatures {
-        compose = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
+    // --- ELIMINAR ESTOS BLOQUES ---
+    // kotlinOptions { ... } // ¡Eliminar! Es redundante con jvmToolchain(17)
+    // buildFeatures { ... } // ¡Eliminar! El nuevo plugin lo maneja solo
+    // composeOptions { ... } // ¡Eliminar! Es ignorado por el nuevo plugin
 }
 
 dependencies {
@@ -53,7 +46,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
 
     // --- Jetpack Compose ---
-    implementation(platform(libs.androidx.compose.bom))
+    implementation(platform(libs.androidx.compose.bom)) // El compilador se basa en esto
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
@@ -76,5 +69,5 @@ dependencies {
 
 // --- Compatibilidad con Kotlin 2.0 y Java 17 ---
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(17) // Correcto, esta es la forma moderna
 }

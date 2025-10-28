@@ -9,21 +9,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.nutriapp.ui.theme.NutriAppTheme
-import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
-import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.line.lineChart
-import com.patrykandpatrick.vico.compose.component.shape.line.lineComponent
-import com.patrykandpatrick.vico.compose.component.text.rememberTextComponent
+import com.patrykandpatrick.vico.compose.chart.line.lineSpec // Esta importación es correcta
+import com.patrykandpatrick.vico.compose.component.lineComponent
+import com.patrykandpatrick.vico.compose.component.textComponent
+import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
+import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.core.axis.AxisPosition
 import com.patrykandpatrick.vico.core.axis.formatter.AxisValueFormatter
-import com.patrykandpatrick.vico.core.chart.line.LineChart
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
 
@@ -58,13 +57,13 @@ fun WeeklyProgressChart() {
     val chartEntryModelProducer = ChartEntryModelProducer(
         listOf(
             // Calorías (naranja)
-            listOf(entryOf(0, 1500), entryOf(1, 1600), entryOf(2, 1550), entryOf(3, 1700), entryOf(4, 1650), entryOf(5, 1800), entryOf(6, 1750)),
+            listOf(entryOf(0, 1500f), entryOf(1, 1600f), entryOf(2, 1550f), entryOf(3, 1700f), entryOf(4, 1650f), entryOf(5, 1800f), entryOf(6, 1750f)),
             // Ejercicio (morado)
-            listOf(entryOf(0, 20), entryOf(1, 30), entryOf(2, 25), entryOf(3, 120), entryOf(4, 30), entryOf(5, 45), entryOf(6, 15)),
+            listOf(entryOf(0, 20f), entryOf(1, 30f), entryOf(2, 25f), entryOf(3, 120f), entryOf(4, 30f), entryOf(5, 45f), entryOf(6, 15f)),
             // Peso (azul)
-            listOf(entryOf(0, 70), entryOf(1, 70.2f), entryOf(2, 70.1f), entryOf(3, 69.8f), entryOf(4, 69.7f), entryOf(5, 69.5f), entryOf(6, 69.4f)),
+            listOf(entryOf(0, 70f), entryOf(1, 70.2f), entryOf(2, 70.1f), entryOf(3, 69.8f), entryOf(4, 69.7f), entryOf(5, 69.5f), entryOf(6, 69.4f)),
             // Proteínas (rojo)
-            listOf(entryOf(0, 120), entryOf(1, 130), entryOf(2, 125), entryOf(3, 140), entryOf(4, 135), entryOf(5, 145), entryOf(6, 120))
+            listOf(entryOf(0, 120f), entryOf(1, 130f), entryOf(2, 125f), entryOf(3, 140f), entryOf(4, 135f), entryOf(5, 145f), entryOf(6, 120f))
         )
     )
 
@@ -76,23 +75,21 @@ fun WeeklyProgressChart() {
     Chart(
         chart = lineChart(
             lines = listOf(
-                LineChart.LineSpec(lineColor = Color(0xFFFFA500).toArgb()), // Naranja
-                LineChart.LineSpec(lineColor = Color(0xFF8A2BE2).toArgb()), // Morado
-                LineChart.LineSpec(lineColor = Color(0xFF1E90FF).toArgb()), // Azul
-                LineChart.LineSpec(lineColor = Color.Red.toArgb())          // Rojo
+                // 👇 CAMBIOS AQUÍ: color -> lineColor, thickness -> lineThickness
+                lineSpec(lineColor = Color(0xFFFFA500), lineThickness = 2.dp),
+                lineSpec(lineColor = Color(0xFF8A2BE2), lineThickness = 2.dp),
+                lineSpec(lineColor = Color(0xFF1E90FF), lineThickness = 2.dp),
+                lineSpec(lineColor = Color.Red, lineThickness = 2.dp)
             )
         ),
         chartModelProducer = chartEntryModelProducer,
         startAxis = rememberStartAxis(
-            label = rememberTextComponent(color = Color.White),
-            guideline = lineComponent(
-                color = Color(0x40FFFFFF),
-                thickness = 1.dp
-            )
+            label = textComponent(color = Color.White),
+            guideline = lineComponent(color = Color(0x40FFFFFF), thickness = 1.dp)
         ),
         bottomAxis = rememberBottomAxis(
             valueFormatter = bottomAxisValueFormatter,
-            label = rememberTextComponent(color = Color.White)
+            label = textComponent(color = Color.White)
         ),
         modifier = Modifier
             .fillMaxWidth()
