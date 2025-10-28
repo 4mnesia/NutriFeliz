@@ -73,8 +73,38 @@ fun NavigationApp(
                 NavHost(
                     navController = navController,
                     startDestination = NavItem.Login.route,
-                    enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500)) },
-                    exitTransition = { slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500)) }
+                    enterTransition = {
+                        val initialRoute = initialState.destination.route?.substringBefore("/")
+                        val targetRoute = targetState.destination.route?.substringBefore("/")
+                        val initialIndex = screensWithBottomBar.indexOf(initialRoute)
+                        val targetIndex = screensWithBottomBar.indexOf(targetRoute)
+
+                        if (initialIndex != -1 && targetIndex != -1) {
+                            val direction = if (targetIndex > initialIndex) 1 else -1
+                            slideInHorizontally(
+                                initialOffsetX = { 1000 * direction },
+                                animationSpec = tween(500)
+                            )
+                        } else {
+                            slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500))
+                        }
+                    },
+                    exitTransition = {
+                        val initialRoute = initialState.destination.route?.substringBefore("/")
+                        val targetRoute = targetState.destination.route?.substringBefore("/")
+                        val initialIndex = screensWithBottomBar.indexOf(initialRoute)
+                        val targetIndex = screensWithBottomBar.indexOf(targetRoute)
+
+                        if (initialIndex != -1 && targetIndex != -1) {
+                            val direction = if (targetIndex > initialIndex) 1 else -1
+                            slideOutHorizontally(
+                                targetOffsetX = { -1000 * direction },
+                                animationSpec = tween(500)
+                            )
+                        } else {
+                            slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500))
+                        }
+                    }
                 ) {
                     composable(NavItem.Login.route) {
                         LoginScreen(navController = navController)
