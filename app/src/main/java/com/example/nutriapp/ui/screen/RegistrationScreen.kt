@@ -42,7 +42,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -67,6 +68,10 @@ fun RegistrationScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     var startAnimation by remember { mutableStateOf(false) }
+
+    val (usernameFocus, emailFocus, passwordFocus, confirmPasswordFocus) = remember {
+        FocusRequester.createRefs()
+    }
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(Unit) {
@@ -111,7 +116,7 @@ fun RegistrationScreen(
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 200)) + fadeIn(tween(1000, 200))) {
                     OutlinedTextField(
                         modifier = Modifier.fillMaxWidth(),
@@ -120,28 +125,32 @@ fun RegistrationScreen(
                         label = { Text(text = "Nombre Completo") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        keyboardActions = KeyboardActions(onNext = { usernameFocus.requestFocus() })
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
 
                 AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 400)) + fadeIn(tween(1000, 400))) {
                     OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(usernameFocus),
                         value = uiState.username,
                         onValueChange = registrationViewModel::onUsernameChange,
                         label = { Text(text = "Nombre de Usuario") },
                         isError = uiState.registrationResult == RegistrationResult.USERNAME_EXISTS,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        keyboardActions = KeyboardActions(onNext = { emailFocus.requestFocus() })
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
 
                 AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 600)) + fadeIn(tween(1000, 600))) {
                     OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(emailFocus),
                         value = uiState.email,
                         onValueChange = registrationViewModel::onEmailChange,
                         label = { Text(text = "Tu email") },
@@ -149,20 +158,22 @@ fun RegistrationScreen(
                         supportingText = { if (!uiState.isEmailValid && uiState.email.isNotEmpty()) Text("Formato de email no válido") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+                        keyboardActions = KeyboardActions(onNext = { passwordFocus.requestFocus() })
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
 
                 AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 800)) + fadeIn(tween(1000, 800))) {
                     OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(passwordFocus),
                         value = uiState.password,
                         onValueChange = registrationViewModel::onPasswordChange,
                         label = { Text(text = "Contraseña") },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                        keyboardActions = KeyboardActions(onNext = { confirmPasswordFocus.requestFocus() }),
                         trailingIcon = {
                             val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -179,7 +190,9 @@ fun RegistrationScreen(
 
                 AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 1000)) + fadeIn(tween(1000, 1000))) {
                     OutlinedTextField(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(confirmPasswordFocus),
                         value = uiState.confirmPassword,
                         onValueChange = registrationViewModel::onConfirmPasswordChange,
                         label = { Text(text = "Confirmar Contraseña") },
@@ -187,7 +200,14 @@ fun RegistrationScreen(
                         supportingText = { if (!uiState.passwordsMatch && uiState.confirmPassword.isNotEmpty()) Text("Las contraseñas no coinciden") },
                         visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                        keyboardActions = KeyboardActions(onDone = { if(uiState.isFormValid) registrationViewModel.registerUser() }),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                focusManager.clearFocus()
+                                if (uiState.isFormValid) {
+                                    registrationViewModel.registerUser()
+                                }
+                            }
+                        ),
                         trailingIcon = { // ICONO AÑADIDO
                             val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                             IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
@@ -207,7 +227,7 @@ fun RegistrationScreen(
                         Text(text = "Registrarse")
                     }
                 }
-                
+
                 if (uiState.registrationResult != null) {
                     val message = when (uiState.registrationResult) {
                         RegistrationResult.SUCCESS -> "¡Se ha registrado con éxito! Redirigiendo..."
