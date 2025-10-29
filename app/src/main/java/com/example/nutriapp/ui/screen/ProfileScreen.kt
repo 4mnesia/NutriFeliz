@@ -1,5 +1,6 @@
 package com.example.nutriapp.ui.screen
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -61,6 +62,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.nutriapp.util.getTmpFileUri
 import com.example.nutriapp.ui.theme.NutriAppTheme
 import com.example.nutriapp.viewmodel.home.HomeViewModel
 import kotlinx.coroutines.launch
@@ -104,13 +106,24 @@ fun ProfileScreen(
         imageUri = uri
     }
 
+    var tempImageUri by remember { mutableStateOf<Uri?>(null) }
     val cameraLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture()
-    ) { success: Boolean ->
-        if (success) {
-            // The image is saved to the URI passed to takePicture
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { success ->
+            if (success) {
+                imageUri = tempImageUri
+            }
         }
-    }
+    )
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                showDialog = true
+            }
+        }
+    )
 
 
     Scaffold(
@@ -144,8 +157,10 @@ fun ProfileScreen(
                     dismissButton = {
                         Button(
                             onClick = {
-                                // You need to provide a URI for the camera to save the image
-                                // For simplicity, this is not fully implemented here
+                                getTmpFileUri(context).let { uri ->
+                                    tempImageUri = uri
+                                    cameraLauncher.launch(uri)
+                                }
                                 showDialog = false
                             }
                         ) {
@@ -174,7 +189,7 @@ fun ProfileScreen(
                             modifier = Modifier
                                 .size(120.dp)
                                 .clip(CircleShape)
-                                .clickable { showDialog = true },
+                                .clickable { permissionLauncher.launch(Manifest.permission.CAMERA) },
                             contentScale = ContentScale.Crop
                         )
                     } else {
@@ -184,7 +199,7 @@ fun ProfileScreen(
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
                                 .size(120.dp)
-                                .clickable { showDialog = true }
+                                .clickable { permissionLauncher.launch(Manifest.permission.CAMERA) }
                         )
                     }
                     Text(username, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
