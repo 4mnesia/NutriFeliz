@@ -124,16 +124,35 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    // ==================================================================
+    // FUNCIÓN CORREGIDA (CON TRAMPA DE 2 DÍAS)
+    // ==================================================================
     fun onSaveWeight(weight: String) {
         weight.toFloatOrNull()?.let { weightValue ->
             val today = LocalDate.now()
             _uiState.update { currentState ->
                 val updatedWeight = currentState.monthlyWeight.toMutableMap()
+
+                // TRAMPA PARA PROBAR (CON 2 DÍAS ANTES)
+                // Si el mapa está vacío, agregamos dos pesos falsos.
+                if (updatedWeight.isEmpty()) {
+                    val dayMinus2 = LocalDate.now().minusDays(2)
+                    updatedWeight[dayMinus2] = weightValue - 2f // Peso de anteayer
+
+                    val dayMinus1 = LocalDate.now().minusDays(1)
+                    updatedWeight[dayMinus1] = weightValue - 1f // Peso de ayer
+                }
+
+                // Guarda el peso real de hoy (o lo sobrescribe si ya existe)
                 updatedWeight[today] = weightValue
+
                 currentState.copy(monthlyWeight = updatedWeight)
             }
         }
     }
+    // ==================================================================
+    // FIN DE LA FUNCIÓN CORREGIDA
+    // ==================================================================
 
     fun onUpdateMacroGoals(calories: Int, protein: Int, carbs: Int, fat: Int) {
         _uiState.update {
