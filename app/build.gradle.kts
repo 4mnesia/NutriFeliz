@@ -27,10 +27,14 @@ android {
             )
         }
     }
+
+    // --- CORRECCIÓN 1 ---
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
+
     kotlinOptions {
         jvmTarget = "17"
     }
@@ -41,6 +45,10 @@ android {
 }
 
 dependencies {
+
+    // --- CORRECCIÓN 2 ---
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4") // <-- ESTA LÍNEA ES NUEVA
+
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")

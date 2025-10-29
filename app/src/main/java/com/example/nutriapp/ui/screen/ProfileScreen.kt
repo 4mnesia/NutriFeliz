@@ -371,6 +371,9 @@ fun ProfileScreen(
                                     calculatedProteins = protein
                                     calculatedCarbs = carbs
                                     calculatedFats = fat
+
+                                    // <-- CORRECCIÓN: Esta línea guarda el peso en el gráfico
+                                    homeViewModel.onSaveWeight(weightForMacros)
                                 }
                             },
                             modifier = Modifier.fillMaxWidth()
