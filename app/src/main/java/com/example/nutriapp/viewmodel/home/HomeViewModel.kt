@@ -150,9 +150,7 @@ class HomeViewModel : ViewModel() {
             }
         }
     }
-    // ==================================================================
-    // FIN DE LA FUNCIÓN CORREGIDA
-    // ==================================================================
+
 
     fun onUpdateMacroGoals(calories: Int, protein: Int, carbs: Int, fat: Int) {
         _uiState.update {
