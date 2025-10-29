@@ -1,34 +1,17 @@
 package com.example.nutriapp.ui.screen
 
-
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.platform.LocalDensity
-
-
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-
-// Imports de Material
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-
-// Imports de Compose
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,12 +25,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-// Imports del ViewModel y Java Time
 import com.example.nutriapp.viewmodel.home.HomeViewModel
 import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @Composable
@@ -75,17 +54,21 @@ fun ProgressScreen(username: String, homeViewModel: HomeViewModel) {
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        WeeklyBarChart(weeklyCalories = uiState.weeklyCalories, goalCalories = uiState.metaCalorias)
+        WeeklyBarChart(
+            weeklyCalories = uiState.weeklyCalories,
+            goalCalories = uiState.metaCalorias
+        )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        WeightLineChart(monthlyWeight = uiState.monthlyWeight)
+        // Usamos weightHistory como lista secuencial de pesos
+        WeightLineChart(weightHistory = uiState.weightHistory)
     }
 }
 
 @Composable
 fun WeeklyBarChart(weeklyCalories: Map<DayOfWeek, Int>, goalCalories: Int) {
-    val today = LocalDate.now().dayOfWeek
+    val today = java.time.LocalDate.now().dayOfWeek
 
     Column {
         Text(text = "Consumo de Calorías Semanal", style = MaterialTheme.typography.titleMedium)
@@ -130,22 +113,31 @@ fun Bar(calories: Int, heightFraction: Float, label: String, isToday: Boolean) {
                 size = androidx.compose.ui.geometry.Size(size.width, size.height * heightFraction)
             )
         }
-        Text(text = label, style = MaterialTheme.typography.bodySmall, color = if (isToday) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = if (isToday) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 
 @Composable
-fun WeightLineChart(monthlyWeight: Map<LocalDate, Float>) {
+fun WeightLineChart(weightHistory: List<Float>) {
     Column {
-        Text(text = "Evolución de Peso", style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = "Evolución de Peso",
+            style = MaterialTheme.typography.titleMedium
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (monthlyWeight.size < 2) {
+        if (weightHistory.isEmpty()) {
             Text(
-                text = "Necesitas registrar al menos dos pesos para ver tu progreso.",
+                text = "Aún no hay registros de peso.",
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp)
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 32.dp)
             )
             return
         }
@@ -167,9 +159,13 @@ fun WeightLineChart(monthlyWeight: Map<LocalDate, Float>) {
             textAlign = TextAlign.Center
         )
 
-        val sortedData = monthlyWeight.entries.sortedBy { it.key }
-        val yAxisLabelPadding = 40.dp
+        val displayData = if (weightHistory.size > 60) weightHistory.takeLast(60) else weightHistory
 
+        val maxWeight = displayData.maxOrNull() ?: 1f
+        val minWeight = displayData.minOrNull() ?: 0f
+        val weightRange = (maxWeight - minWeight).coerceAtLeast(1f)
+
+        val yAxisLabelPadding = 40.dp
         val density = LocalDensity.current
         val yAxisPaddingPx = with(density) { yAxisLabelPadding.toPx() }
         val innerOffsetPx = with(density) { 4.dp.toPx() }
@@ -185,74 +181,57 @@ fun WeightLineChart(monthlyWeight: Map<LocalDate, Float>) {
                     .fillMaxSize()
                     .padding(start = yAxisLabelPadding)
             ) {
-                val minDayEpoch = sortedData.first().key.toEpochDay()
-                val maxDayEpoch = sortedData.last().key.toEpochDay()
-                val dayRange = (maxDayEpoch - minDayEpoch).toFloat().coerceAtLeast(1f)
+                val pointCount = displayData.size
 
-                val maxWeight = monthlyWeight.values.maxOrNull() ?: 0f
-                val minWeight = monthlyWeight.values.minOrNull() ?: 0f
-                val weightRange = (maxWeight - minWeight).coerceAtLeast(1f)
-
-                val points = sortedData.map { (date, weight) ->
-                    val x = if (dayRange > 0) ((date.toEpochDay() - minDayEpoch).toFloat() / dayRange) * size.width else 0f
-                    val y = if (weightRange > 0) size.height - ((weight - minWeight) / weightRange) * size.height else size.height / 2
+                val points = displayData.mapIndexed { index, weight ->
+                    val x = if (pointCount > 1) (index.toFloat() / (pointCount - 1)) * size.width else size.width / 2f
+                    val y = size.height - ((weight - minWeight) / weightRange) * size.height
                     Offset(x, y)
                 }
 
+                // Líneas horizontales
                 val numGridLines = 5
                 for (i in 0 until numGridLines) {
                     val yPos = size.height * (i / (numGridLines - 1).toFloat())
-
                     drawLine(
                         color = gridColor,
                         start = Offset(0f, yPos),
                         end = Offset(size.width, yPos),
                         strokeWidth = 1f,
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f))
                     )
 
                     val weightLabelValue = maxWeight - (weightRange * (i / (numGridLines - 1).toFloat()))
                     val weightText = "%.1f kg".format(weightLabelValue)
                     val textLayoutResult = textMeasurer.measure(weightText, style = textStyleYAxis)
-
                     drawText(
                         textMeasurer = textMeasurer,
                         text = weightText,
                         style = textStyleYAxis,
-                        topLeft = Offset(
-                            x = -(yAxisPaddingPx - innerOffsetPx),
-                            y = yPos - (textLayoutResult.size.height / 2)
-                        )
+                        topLeft = Offset(-(yAxisPaddingPx - innerOffsetPx), yPos - (textLayoutResult.size.height / 2))
                     )
                 }
 
-                if (points.size > 1) {
+                // Línea de evolución
+                if (points.size >= 2) {
                     for (i in 0 until points.size - 1) {
                         drawLine(
                             color = lineColor,
                             start = points[i],
                             end = points[i + 1],
-                            strokeWidth = 8f
+                            strokeWidth = 5f
                         )
                     }
                 }
 
+                // Puntos
                 points.forEach { offset ->
-                    drawCircle(
-                        color = lineColor,
-                        radius = 8f,
-                        center = offset,
-                        style = Fill
-                    )
-                    drawCircle(
-                        color = Color.Black.copy(alpha = 0.5f),
-                        radius = 8f,
-                        center = offset,
-                        style = Stroke(width = 2f)
-                    )
+                    drawCircle(color = lineColor, radius = 6f, center = offset, style = Fill)
+                    drawCircle(color = Color.Black.copy(alpha = 0.5f), radius = 6f, center = offset, style = Stroke(width = 1.5f))
                 }
             }
 
+            // Etiquetas de inicio y fin
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -263,31 +242,15 @@ fun WeightLineChart(monthlyWeight: Map<LocalDate, Float>) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    val dateFormatter = DateTimeFormatter.ofPattern("dd/MM")
-                    if (sortedData.isNotEmpty()) {
-                        val firstDate = sortedData.first().key
-                        Text(
-                            text = firstDate.format(dateFormatter),
-                            style = textStyleDate,
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Start
-                        )
-                    }
-                    if (sortedData.size > 1) {
-                        val lastDate = sortedData.last().key
-                        Text(
-                            text = lastDate.format(dateFormatter),
-                            style = textStyleDate,
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.End
-                        )
-                    }
+                    Text(text = "Inicio", style = textStyleDate, textAlign = TextAlign.Start)
+                    Text(text = "Último", style = textStyleDate, textAlign = TextAlign.End)
                 }
             }
         }
     }
 }
 
+// ----- Circular Chart -----
 @Composable
 fun CircularChart(proteinas: Float, grasas: Float, carbos: Float) {
     val proteinColor = MaterialTheme.colorScheme.background

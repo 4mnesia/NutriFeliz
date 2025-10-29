@@ -12,23 +12,22 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
 
-// REFACTORIZADO: Se ha corregido el estado para que no se pierdan los datos del peso.
+
 data class HomeUiState(
-    // Estado del tema
     val esTemaOscuro: Boolean = true,
 
-    // Datos base de Actividad
+    // Actividades
     val listaActividades: List<Actividad> = emptyList(),
     val formularioActividadAbierto: Boolean = false,
 
-    // Datos base de Comida
+    // Comidas
     val listaComidas: List<ComidaAlacenada> = emptyList(),
     val formularioComidaAbierto: Boolean = false,
     val proteinasConsumidas: Int = 0,
     val carbosConsumidos: Int = 0,
     val grasasConsumidas: Int = 0,
 
-    //perdidas
+    // Pérdidas
     val caloriasQuemadas: Int = 0,
     val caloriasConsumidas: Int = 0,
     val caloriasNetas: Int = 0,
@@ -45,17 +44,17 @@ data class HomeUiState(
     val metaGrasas: Int = 80,
     val metaCalorias: Int = 2000,
 
-    // Max
+    // Máximos
     val maxProteinas: Int = 250,
     val maxCarbos: Int = 500,
     val maxGrasas: Int = 150,
     val maxCalorias: Int = 2200,
 
-    // Datos para el gráfico semanal
+
     val weeklyCalories: Map<DayOfWeek, Int> = DayOfWeek.values().associateWith { 0 },
 
-    // Datos para el gráfico mensual de peso
-    val monthlyWeight: Map<LocalDate, Float> = emptyMap()
+
+    val weightHistory: List<Float> = emptyList()
 )
 
 class HomeViewModel : ViewModel() {
@@ -125,32 +124,16 @@ class HomeViewModel : ViewModel() {
     }
 
     // ==================================================================
-    // FUNCIÓN CORREGIDA (CON TRAMPA DE 2 DÍAS)
+    // Guardar peso como lista secuencial
     // ==================================================================
     fun onSaveWeight(weight: String) {
         weight.toFloatOrNull()?.let { weightValue ->
-            val today = LocalDate.now()
             _uiState.update { currentState ->
-                val updatedWeight = currentState.monthlyWeight.toMutableMap()
-
-                // TRAMPA PARA PROBAR (CON 2 DÍAS ANTES)
-                // Si el mapa está vacío, agregamos dos pesos falsos.
-                if (updatedWeight.isEmpty()) {
-                    val dayMinus2 = LocalDate.now().minusDays(2)
-                    updatedWeight[dayMinus2] = weightValue - 2f // Peso de anteayer
-
-                    val dayMinus1 = LocalDate.now().minusDays(1)
-                    updatedWeight[dayMinus1] = weightValue - 1f // Peso de ayer
-                }
-
-                // Guarda el peso real de hoy (o lo sobrescribe si ya existe)
-                updatedWeight[today] = weightValue
-
-                currentState.copy(monthlyWeight = updatedWeight)
+                val updatedWeightHistory = currentState.weightHistory + weightValue
+                currentState.copy(weightHistory = updatedWeightHistory)
             }
         }
     }
-
 
     fun onUpdateMacroGoals(calories: Int, protein: Int, carbs: Int, fat: Int) {
         _uiState.update {
