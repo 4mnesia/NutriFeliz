@@ -10,7 +10,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,8 +22,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -69,7 +66,6 @@ fun SettingsScreen(
     val prefs = remember { NotificationPreferences(context) }
     val alarmScheduler = remember { AlarmScheduler(context) }
 
-    var expanded by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var showExactAlarmDialog by remember { mutableStateOf(false) }
 
@@ -151,40 +147,35 @@ fun SettingsScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // Sección de Temas
-            Text("Temas", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
-            Box {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { expanded = true }
-                        .padding(vertical = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+            // Sección de Tema
+            Text("Tema", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Button(
+                    onClick = { setColorProfile(ColorProfile.PREDETERMINADO) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (colorProfile == ColorProfile.PREDETERMINADO) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                        contentColor = if (colorProfile == ColorProfile.PREDETERMINADO) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                    )
                 ) {
-                    Text(text = if (colorProfile == ColorProfile.PREDETERMINADO) "Predeterminado" else "Rosa", color = MaterialTheme.colorScheme.onBackground)
+                    Text("Oscuro")
                 }
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                Button(
+                    onClick = { setColorProfile(ColorProfile.ROSA) },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (colorProfile == ColorProfile.ROSA) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+                        contentColor = if (colorProfile == ColorProfile.ROSA) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                    )
                 ) {
-                    DropdownMenuItem(
-                        text = { Text("Predeterminado", color = MaterialTheme.colorScheme.onSurface) },
-                        onClick = {
-                            setColorProfile(ColorProfile.PREDETERMINADO)
-                            expanded = false
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Rosa", color = MaterialTheme.colorScheme.onSurface) },
-                        onClick = {
-                            setColorProfile(ColorProfile.ROSA)
-                            expanded = false
-                        }
-                    )
+                    Text("Claro")
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
