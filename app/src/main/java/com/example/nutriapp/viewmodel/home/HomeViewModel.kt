@@ -14,8 +14,6 @@ import java.util.UUID
 
 
 data class HomeUiState(
-    val esTemaOscuro: Boolean = true,
-
     // Actividades
     val listaActividades: List<Actividad> = emptyList(),
     val formularioActividadAbierto: Boolean = false,
@@ -60,10 +58,6 @@ data class HomeUiState(
 class HomeViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
-
-    fun onThemeChange() {
-        _uiState.update { it.copy(esTemaOscuro = !it.esTemaOscuro) }
-    }
 
     fun onToggleFormularioActividad() {
         _uiState.update { it.copy(formularioActividadAbierto = !it.formularioActividadAbierto) }

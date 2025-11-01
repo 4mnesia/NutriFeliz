@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,10 +22,8 @@ import com.example.nutriapp.navigation.NavItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(isClicked: Boolean,
-           user: String,
-           onTheme: () -> Unit,
-           navController: NavController?){
+fun TopBar(user: String,
+           navController: NavController?) {
     val onPrimaryColor = MaterialTheme.colorScheme.onPrimary
     val primaryColor = MaterialTheme.colorScheme.primary
     val borderColor = MaterialTheme.colorScheme.secondary
@@ -40,21 +36,12 @@ fun TopBar(isClicked: Boolean,
         },
         actions = {
                 IconButton(
-                    onClick = onTheme
-                ) {
-                    Icon(
-                        imageVector = if (isClicked) Icons.Outlined.DarkMode else Icons.Outlined.LightMode,
-                        contentDescription = "Color Changing",
-                        tint = onPrimaryColor
-                    )
-                }
-                IconButton(
-                    onClick ={
+                    onClick = {
                         navController?.navigate(NavItem.Settings.route)
                     }
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Settings ,
+                        imageVector = Icons.Outlined.Settings,
                         contentDescription = "Color Changing",
                         tint = onPrimaryColor
                     )
@@ -67,14 +54,14 @@ fun TopBar(isClicked: Boolean,
         modifier = Modifier
             .height(intrinsicSize = IntrinsicSize.Max)
             .drawBehind {
-            val strokeWidth = 2.dp.toPx()
-            drawLine(
-                color = borderColor,
-                start = Offset(0f, size.height),
-                end = Offset(size.width, size.height),
-                strokeWidth = strokeWidth
-            )
-        }
+                val strokeWidth = 2.dp.toPx()
+                drawLine(
+                    color = borderColor,
+                    start = Offset(0f, size.height),
+                    end = Offset(size.width, size.height),
+                    strokeWidth = strokeWidth
+                )
+            }
 
     )
 }

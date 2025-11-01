@@ -1,7 +1,5 @@
 package com.example.nutriapp.navigation
 
-import androidx.compose.ui.graphics.vector.ImageVector
-
 sealed class NavItem(val route: String) {
     object Login : NavItem("login")
     object Registration : NavItem("registration")

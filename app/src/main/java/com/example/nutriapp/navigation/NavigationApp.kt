@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -41,9 +40,8 @@ fun NavigationApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val username = navBackStackEntry?.arguments?.getString("username") ?: "Usuario"
-    val homeUiState by homeViewModel.uiState.collectAsState()
 
-    NutriAppTheme(darkTheme = homeUiState.esTemaOscuro, colorProfile = colorProfile, dynamicColor = false) {
+    NutriAppTheme(darkTheme = colorProfile == ColorProfile.PREDETERMINADO, colorProfile = colorProfile, dynamicColor = false) {
         val screensWithBottomBar = listOf(
             NavItem.Home.route,
             NavItem.Progress.route,
@@ -56,9 +54,7 @@ fun NavigationApp(
             topBar = {
                 if (showBottomBar) {
                     TopBar(
-                        isClicked = homeUiState.esTemaOscuro,
                         user = username,
-                        onTheme = { homeViewModel.onThemeChange() },
                         navController = navController
                     )
                 }
