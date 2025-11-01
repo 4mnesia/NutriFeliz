@@ -2,7 +2,7 @@ package com.example.nutriapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-//============== TEMA PREDETERMINADO (MORADO OSCURO) ==============
+//============== TEMA OSCURO (MORADO OSCURO) ==============
 val PurpleDarkPrimary = Color(0xFF3A006B)      // Acento principal (botones, TopAppBar)
 val PurpleDarkOnPrimary = Color(0xFFFFFFFF)    // Texto sobre el color primario
 val PurpleDarkSecondary = Color(0xFF56407A)    // Acentos secundarios
@@ -13,7 +13,7 @@ val PurpleDarkOnBackground = Color(0xFFEADDFF) // Texto sobre el fondo
 val PurpleDarkOnSurface = Color(0xFFEADDFF)    // Texto sobre superficies
 
 
-//============== TEMA ROSA (PASTEL CLARO) ==============
+//============== TEMA CLARO (ROSA) ==============
 val PastelPinkPrimary = Color(0xFFE5A9B4)      // Acento principal (botones, TopAppBar)
 val PastelPinkOnPrimary = Color(0xFFFFFFFF)    // Texto sobre el color primario
 val PastelPinkSecondary = Color(0xFFF4D4DE)    // Acentos secundarios
