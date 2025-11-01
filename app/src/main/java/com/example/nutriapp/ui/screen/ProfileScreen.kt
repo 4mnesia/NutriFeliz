@@ -1,6 +1,8 @@
 package com.example.nutriapp.ui.screen
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -59,12 +61,14 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.nutriapp.ui.theme.NutriAppTheme
 import com.example.nutriapp.viewmodel.home.HomeViewModel
 import kotlinx.coroutines.launch
+import java.io.File
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,6 +103,8 @@ fun ProfileScreen(
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
+    var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -109,7 +115,34 @@ fun ProfileScreen(
         contract = ActivityResultContracts.TakePicture()
     ) { success: Boolean ->
         if (success) {
-            // The image is saved to the URI passed to takePicture
+            imageUri = tempCameraUri
+        }
+    }
+
+    fun launchCamera() {
+        val file = File.createTempFile(
+            "profile_image_${System.currentTimeMillis()}",
+            ".jpg",
+            context.cacheDir
+        )
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            file
+        )
+        tempCameraUri = uri
+        cameraLauncher.launch(uri)
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            launchCamera()
+        } else {
+            scope.launch {
+                snackbarHostState.showSnackbar("Permiso de cámara denegado.")
+            }
         }
     }
 
@@ -148,9 +181,12 @@ fun ProfileScreen(
                     dismissButton = {
                         Button(
                             onClick = {
-                                // You need to provide a URI for the camera to save the image
-                                // For simplicity, this is not fully implemented here
                                 showDialog = false
+                                if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                                    launchCamera()
+                                } else {
+                                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                }
                             }
                         ) {
                             Text("Cámara")
