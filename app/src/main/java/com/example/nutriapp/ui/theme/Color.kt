@@ -2,39 +2,23 @@ package com.example.nutriapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// --- Perfil Rosa: Claro ---
-val RosaClaroBackground = Color(0xFFF5F5F1)
-val RosaClaroSurface = Color(0xFFEDD1DD)
-val RosaClaroPrimary = Color(0xFF51648B)
-val RosaClaroOnBackground = Color.Black
-
-// --- Perfil Rosa: Oscuro ---
-val RosaOscuroBackground = Color(0xFF3C2F34)
-val RosaOscuroSurface = Color(0xFF503E46)
-val RosaOscuroPrimary = Color(0xFFB93E6B)
-val RosaOscuroSecondary = Color(0xFFB58E97)
-val RosaOscuroOnBackground = Color(0xFFFFF0F2)
+//============== TEMA PREDETERMINADO (MORADO OSCURO) ==============
+val PurpleDarkPrimary = Color(0xFF3A006B)      // Acento principal (botones, TopAppBar)
+val PurpleDarkOnPrimary = Color(0xFFFFFFFF)    // Texto sobre el color primario
+val PurpleDarkSecondary = Color(0xFF56407A)    // Acentos secundarios
+val PurpleDarkTertiary = Color(0xFFD0BCFF)     // Acentos de contraste
+val PurpleDarkBackground = Color(0xFF14002E)   // Fondo de la app
+val PurpleDarkSurface = Color(0xFF20103E)      // Superficies (tarjetas, menús)
+val PurpleDarkOnBackground = Color(0xFFEADDFF) // Texto sobre el fondo
+val PurpleDarkOnSurface = Color(0xFFEADDFF)    // Texto sobre superficies
 
 
-// --- PREDETERMINADO: MODO OSCURO (PÚRPURA MEJORADO) ---
-val PurpuraDarkBackground = Color(0xFF1A0F2E)     // Fondo: Púrpura muy oscuro
-val PurpuraDarkSurface = Color(0xFF251740)        // Tarjetas: Un púrpura más claro que el fondo
-val PurpuraDarkPrimary = Color(0xFF4C007D)        // Botones y acentos principales (Lavanda)
-val PurpuraDarkOnPrimary = Color(0xFFFFFFFF)       // Texto sobre botones
-val PurpuraDarkSecondary = Color(0xFF3F2E65)      // Bordes y acentos sutiles
-val PurpuraDarkTertiary = Color(0xFFEADDFF)        // Texto y acentos más claros (Lavanda extra pálido)
-val PurpuraDarkOnBackground = Color(0xFFF7F2FF)  // Texto principal (Casi blanco)
-val PurpuraDarkOnSurface = Color(0xFFF7F2FF)      // Texto sobre tarjetas (Casi blanco)
-
-
-// --- PREDETERMINADO: MODO CLARO (ROSADO) ---
-val PredeterminadoLightPrimary = Color(0xFFE5A9B4) //0xFFE5A9B4
-val PredeterminadoLightOnPrimary = Color(0xFFFFFFFF)
-val PredeterminadoLightSecondary = Color(0xFFF4D4DE)
-val PredeterminadoLightOnSecondary = Color(0xFF492532)
-val PredeterminadoLightTertiary = Color(0xFF984065)
-val PredeterminadoLightOnTertiary = Color(0xFFFFFFFF)
-val PredeterminadoLightBackground = Color(0xFFFFF7F8)
-val PredeterminadoLightOnBackground = Color(0xFF201A1C)
-val PredeterminadoLightSurface = Color(0xFFFFF7F8)
-val PredeterminadoLightOnSurface = Color(0xFF201A1C)
+//============== TEMA ROSA (PASTEL CLARO) ==============
+val PastelPinkPrimary = Color(0xFFE5A9B4)      // Acento principal (botones, TopAppBar)
+val PastelPinkOnPrimary = Color(0xFFFFFFFF)    // Texto sobre el color primario
+val PastelPinkSecondary = Color(0xFFF4D4DE)    // Acentos secundarios
+val PastelPinkTertiary = Color(0xFF984065)     // Acentos de contraste
+val PastelPinkBackground = Color(0xFFFFF7F8)   // Fondo de la app
+val PastelPinkSurface = Color(0xFFFFF7F8)      // Superficies (tarjetas, menús)
+val PastelPinkOnBackground = Color(0xFF201A1C) // Texto sobre el fondo
+val PastelPinkOnSurface = Color(0xFF201A1C)    // Texto sobre superficies
