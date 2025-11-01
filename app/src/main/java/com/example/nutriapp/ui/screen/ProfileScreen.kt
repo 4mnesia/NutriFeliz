@@ -234,15 +234,6 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Button(
-                        onClick = { onLogout() },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                    ) {
-                        Text("Cerrar sesión")
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
                     Button(onClick = { showDetails = !showDetails }) {
                         Text(if (showDetails) "Ocultar calculadora" else "Abrir calculadora de macros")
                     }

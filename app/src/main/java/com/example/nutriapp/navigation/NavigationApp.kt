@@ -155,7 +155,14 @@ fun NavigationApp(
                         SettingsScreen(
                             navController = navController,
                             colorProfile = colorProfile,
-                            setColorProfile = setColorProfile
+                            setColorProfile = setColorProfile,
+                            onLogout = {
+                                navController.navigate(NavItem.Login.route) {
+                                    popUpTo(navController.graph.id) {
+                                        inclusive = true
+                                    }
+                                }
+                            }
                         )
                     }
                 }

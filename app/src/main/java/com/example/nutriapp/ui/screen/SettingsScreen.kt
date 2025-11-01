@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,7 +62,8 @@ import java.util.Calendar
 fun SettingsScreen(
     navController: NavController,
     colorProfile: ColorProfile,
-    setColorProfile: (ColorProfile) -> Unit
+    setColorProfile: (ColorProfile) -> Unit,
+    onLogout: () -> Unit
 ) {
     val context = LocalContext.current
     val prefs = remember { NotificationPreferences(context) }
@@ -252,6 +254,19 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.End
                 )
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            // Sección de Cuenta
+            Text("Cuenta", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = onLogout,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Cerrar sesión")
             }
         }
     }
