@@ -48,10 +48,18 @@ dependencies {
 
     // --- CORRECCIÓN 2 ---
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4") // <-- ESTA LÍNEA ES NUEVA
-
     implementation("io.coil-kt:coil-compose:2.6.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
-    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    //jetpack compose y material 3 (2025)
+    implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.compose.material3:material3:1.3.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    //retrofit y gson converter
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    //corrutinas para trabajos asincronico
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
