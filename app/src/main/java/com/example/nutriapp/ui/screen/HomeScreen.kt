@@ -1,5 +1,7 @@
 package com.example.nutriapp.ui.screen
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
@@ -21,6 +23,7 @@ import com.example.nutriapp.ui.component.home.*
 import com.example.nutriapp.ui.theme.NutriAppTheme
 import com.example.nutriapp.viewmodel.home.HomeViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen (
@@ -29,6 +32,7 @@ fun HomeScreen (
     homeViewModel: HomeViewModel = viewModel()
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
+    val sugerencias by homeViewModel.sugerencias.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -90,17 +94,28 @@ fun HomeScreen (
         }
         if (uiState.formularioComidaAbierto) {
             FormFood(
-                onDismiss = { homeViewModel.onToggleFormularioComida() },
+                onDismiss = { 
+                    homeViewModel.onToggleFormularioComida()
+                    homeViewModel.onLimpiarSugerencias()
+                },
                 onGuardarComida = { alimento,cantidad,tipoComida ->
                     homeViewModel.onGuardarComida(alimento, cantidad, tipoComida)
+                    homeViewModel.onLimpiarSugerencias()
+                },
+                onBuscarComida = { query, cantidad, tipoComida ->
+                    homeViewModel.onBuscarYGuardarComida(query, cantidad, tipoComida)
+                    homeViewModel.onLimpiarSugerencias()
+                },
+                sugerencias = sugerencias,
+                onQueryChange = { newText ->
+                    homeViewModel.onBuscarSugerencias(newText)
                 }
             )
         }
     }
 }
 
-
-
+/*
 @Preview(name = "Pantalla Principal", showBackground = true)
 @Composable
 private fun HomeScreenPreview() {
@@ -110,4 +125,4 @@ private fun HomeScreenPreview() {
             username = "Elmo"
         )
     }
-}
+}*/

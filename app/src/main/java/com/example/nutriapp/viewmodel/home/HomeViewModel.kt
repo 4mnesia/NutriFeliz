@@ -3,11 +3,15 @@ package com.example.nutriapp.viewmodel.home
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.example.nutriapp.model.home.*
+import com.example.nutriapp.repository.FoodRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.util.UUID
@@ -48,21 +52,20 @@ data class HomeUiState(
     val maxGrasas: Int = 150,
     val maxCalorias: Int = 2200,
 
-
     val weeklyCalories: Map<DayOfWeek, Int> = DayOfWeek.values().associateWith { 0 },
-
-
     val weightHistory: List<Float> = emptyList()
 )
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(private val foodRepository: FoodRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
-
+    private val _sugerencias = MutableStateFlow<List<Alimento>>(emptyList())
+    val sugerencias: StateFlow<List<Alimento>> = _sugerencias.asStateFlow()
     fun onToggleFormularioActividad() {
         _uiState.update { it.copy(formularioActividadAbierto = !it.formularioActividadAbierto) }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun onGuardarActividad(tipo: String, duracion: Int) {
         val caloriasCalculadas = duracion * 12
         val nuevaActividad = Actividad(
@@ -81,6 +84,7 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun onBorrarActividad(actividad: Actividad) {
         _uiState.update {
             recalcularEstadoDerivado(
@@ -91,6 +95,37 @@ class HomeViewModel : ViewModel() {
 
     fun onToggleFormularioComida() {
         _uiState.update { it.copy(formularioComidaAbierto = !it.formularioComidaAbierto) }
+    }
+
+    fun onBuscarSugerencias(query: String) {
+        viewModelScope.launch {
+            if (query.length >= 2) {
+                val resultados = foodRepository.buscarSugerencias(query)
+                _sugerencias.value = resultados
+            } else {
+                _sugerencias.value = emptyList()
+            }
+        }
+    }
+
+    fun onLimpiarSugerencias() {
+        _sugerencias.value = emptyList()
+    }
+    
+    // NUEVO: Función para buscar alimento en la API y guardar
+    fun onBuscarYGuardarComida(query: String, cantidad: Int, tipoComida: String) {
+        viewModelScope.launch {
+            // Delegamos la búsqueda al repositorio
+            val alimento = foodRepository.buscarAlimento(query)
+            
+            if (alimento != null) {
+                // Si se encontró, lo guardamos
+                onGuardarComida(alimento, cantidad, tipoComida)
+            } else {
+                // Manejo de error: no se encontró el alimento o hubo error de red
+                println("No se encontraron alimentos para: $query")
+            }
+        }
     }
 
     fun onGuardarComida(alimento: Alimento, cantidad: Int, tipoComida: String) {
@@ -180,5 +215,15 @@ class HomeViewModel : ViewModel() {
             progresoGrasas = progresoGrasas,
             weeklyCalories = weeklyCalories
         )
+    }
+}
+
+class HomeViewModelFactory(private val repository: FoodRepository) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return HomeViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

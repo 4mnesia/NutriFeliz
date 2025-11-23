@@ -34,11 +34,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Fastfood
 import androidx.compose.material.icons.outlined.Nightlight
 import androidx.compose.material.icons.outlined.Restaurant
@@ -70,6 +72,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
@@ -77,7 +80,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.nutriapp.R
 import com.example.nutriapp.model.home.*
-
 
 
 //Components
@@ -545,7 +547,10 @@ fun FormACtivity(clicked: Boolean,
 @Composable
 fun FormFood(
     onDismiss: () -> Unit,
-    onGuardarComida: (alimento: Alimento, cantidad: Int, tipoComida: String) -> Unit
+    onGuardarComida: (alimento: Alimento, cantidad: Int, tipoComida: String) -> Unit,
+    onBuscarComida: (String, Int, String) -> Unit,
+    sugerencias: List<Alimento>,
+    onQueryChange: (String) -> Unit
 ) {
 
     var textoDeBusqueda by remember { mutableStateOf("") }
@@ -555,14 +560,6 @@ fun FormFood(
     val tiposDeComida = listOf("Desayuno", "Almuerzo", "Cena", "Snack")
     var tipoComida by remember { mutableStateOf(tiposDeComida[0]) }
     var tipoComidaExpanded by remember { mutableStateOf(false) }
-
-    val listaFiltrada = remember(textoDeBusqueda) {
-        if (textoDeBusqueda.length >= 2) {
-            baseDeDatosAlimentos.filter { it.nombre.contains(textoDeBusqueda, ignoreCase = true) }
-        } else {
-            emptyList()
-        }
-    }
     LaunchedEffect(alimentoSeleccionado, cantidad) {
         val cantidadInt = cantidad.toIntOrNull() ?: 0
         if (alimentoSeleccionado != null) {
@@ -603,12 +600,59 @@ fun FormFood(
         ) {
             OutlinedTextField(
                 value = textoDeBusqueda,
-                onValueChange = { textoDeBusqueda = it; alimentoSeleccionado = null },
-                label = { Text("Buscar Alimento") },
+                onValueChange = {
+                    textoDeBusqueda = it
+                    alimentoSeleccionado = null
+                    onQueryChange(it)
+                },
+                label = { Text("Buscar Alimento (API)") },
                 placeholder = { Text("Ej: Pechuga de pollo...") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        if (textoDeBusqueda.isNotBlank()) {
+                            val cantidadInt = cantidad.toIntOrNull() ?: 100
+                            onBuscarComida(textoDeBusqueda, cantidadInt, tipoComida)
+                            onDismiss()
+                        }
+                    }
+                ),
+                trailingIcon = {
+                    IconButton(onClick = {
+                        if (textoDeBusqueda.isNotBlank()) {
+                            val cantidadInt = cantidad.toIntOrNull() ?: 100
+                            onBuscarComida(textoDeBusqueda, cantidadInt, tipoComida)
+                            onDismiss()
+                        }
+                    }) {
+                        Icon(Icons.Default.Search, contentDescription = "Buscar en API")
+                    }
+                }
             )
+
+            if (sugerencias.isNotEmpty() && alimentoSeleccionado == null) {
+                LazyColumn(
+                    modifier = Modifier
+                        .heightIn(max = 200.dp)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+                ) {
+                    items(sugerencias) { alimento ->
+                        ResultadoBusquedaItem(
+                            alimento = alimento,
+                            estaSeleccionado = false,
+                            onClick = {
+                                alimentoSeleccionado = alimento
+                                textoDeBusqueda = alimento.nombre
+                                onQueryChange("")
+                            }
+                        )
+                        HorizontalDivider()
+                    }
+                }
+            }
 
             if (alimentoSeleccionado != null) {
                 ResultadoBusquedaItem(
@@ -620,20 +664,7 @@ fun FormFood(
                     }
                 )
             }
-            else if (listaFiltrada.isNotEmpty()) {
-                LazyColumn(modifier = Modifier.heightIn(max = 200.dp)) {
-                    items(listaFiltrada) { alimento ->
-                        ResultadoBusquedaItem(
-                            alimento = alimento,
-                            estaSeleccionado = false,
-                            onClick = {
-                                alimentoSeleccionado = alimento
-                                textoDeBusqueda = alimento.nombre
-                            }
-                        )
-                    }
-                }
-            }
+
             OutlinedTextField(
                 value = cantidad,
                 onValueChange = { cantidad = it.filter { char -> char.isDigit() } },
@@ -642,7 +673,6 @@ fun FormFood(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                enabled = alimentoSeleccionado != null
             )
 
             if (alimentoSeleccionado != null && cantidad.isNotEmpty()) {
@@ -680,42 +710,34 @@ fun FormFood(
                     }
                 }
             }
-            val sePuedeGuardar = alimentoSeleccionado != null && (cantidad.toIntOrNull() ?: 0) > 0
-            FormularioPrincipalButton(
-                texto = "Guardar Comida",
-                enabled = sePuedeGuardar,
-                onClick = {
-                    onGuardarComida(alimentoSeleccionado!!, cantidad.toInt(), tipoComida)
-                }
-            )
+
+            // Botón guardar normal para items seleccionados de la lista
+            if (alimentoSeleccionado != null) {
+                FormularioPrincipalButton(
+                    texto = "Guardar Comida",
+                    enabled = (cantidad.toIntOrNull() ?: 0) > 0,
+                    onClick = {
+                         onGuardarComida(alimentoSeleccionado!!, cantidad.toInt(), tipoComida)
+                         onDismiss()
+                    }
+                )
+            } else {
+                // Si no hay seleccionado, permitimos buscar directamente en API
+                val sePuedeBuscarAPI = textoDeBusqueda.isNotBlank() && (cantidad.toIntOrNull() ?: 0) > 0
+                 FormularioPrincipalButton(
+                    texto = "Buscar y Guardar",
+                    enabled = sePuedeBuscarAPI,
+                    onClick = {
+                         onBuscarComida(textoDeBusqueda, cantidad.toInt(), tipoComida)
+                         onDismiss()
+                    }
+                )
+            }
         }
     }
 }
 
 
-val baseDeDatosAlimentos = listOf(
-    Alimento("Pechuga de pollo", 165, 31f, 0f, 3.6f),
-    Alimento("Salmón", 208, 20f, 0f, 13f),
-    Alimento("Huevo", 155, 13f, 1.1f, 11f),
-    Alimento("Arroz blanco", 130, 2.7f, 28f, 0.3f),
-    Alimento("Lentejas", 116, 9f, 20f, 0.4f),
-    Alimento("Fresa", 32, 0.7f, 7.7f, 0.3f),
-    Alimento("Sandía", 30, 0.6f, 7.6f, 0.2f),
-    Alimento("Pan blanco", 265, 9f, 49f, 3.2f),
-    Alimento("Aceite de Oliva", 884, 0f, 0f, 100f),
-    Alimento("Salchicha", 301, 12f, 3f, 27f),
-    Alimento("Queso Cheddar", 404, 25f, 1.3f, 33f),
-    Alimento("Pan de Pascua", 362, 9f, 61f, 9f),
-    Alimento("Palta", 160, 2f, 9f, 15f),
-    Alimento("Lechuga", 14, 1f, 3f, 0.1f),
-    Alimento("Carne de Res", 150, 22f, 0f, 7f),
-    Alimento("Fideos", 158, 6f, 31f, 0.9f),
-    Alimento("Manzana", 52, 0.3f, 14f, 0.2f),
-    Alimento("Galletas de Arroz", 392, 7f, 81f, 4f),
-    Alimento("Leche", 46, 3f, 5f, 1f),
-    Alimento("Yogurt Griego", 94, 9f, 5f, 4f),
-    Alimento("Papa Cocida", 87, 2f, 20f, 0.1f),
-    )
 
 
 @Composable
@@ -729,7 +751,7 @@ fun ResultadoBusquedaItem(
             .fillMaxWidth()
             .clickable(onClick = onClick)
             //.background(if (estaSeleccionado) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else Color.Transparent)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp, horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -781,8 +803,6 @@ fun ValoresNutricionalesCalculados(nutrientes: NutrientesCalculados) {
         )
     }
 }
-
-
 
 @Composable
 fun ActividadGuardadaItem(
@@ -914,5 +934,3 @@ fun FoodItemRow(
         }
     }
 }
-
-
