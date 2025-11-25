@@ -65,11 +65,19 @@ fun NutriAppTheme(
 
     val view = LocalView.current
     if (!view.isInEditMode) {
+        // --- ¡LA SOLUCIÓN! ---
+        // Este SideEffect ahora es seguro.
         SideEffect {
-            val window = (view.context as Activity).window
-            window.statusBarColor = Color.Transparent.toArgb()
-            WindowCompat.getInsetsController(window, view)
-                .isAppearanceLightStatusBars = !darkTheme
+            // 1. Obtenemos el contexto de la vista.
+            val currentContext = view.context
+            // 2. Comprobamos si el contexto es una Activity. Esto fallará de forma segura en un Dialog.
+            if (currentContext is Activity) {
+                // 3. Solo si es una Activity, procedemos a cambiar la barra de estado.
+                val window = currentContext.window
+                window.statusBarColor = Color.Transparent.toArgb()
+                WindowCompat.getInsetsController(window, view)
+                    .isAppearanceLightStatusBars = !darkTheme
+            }
         }
     }
 

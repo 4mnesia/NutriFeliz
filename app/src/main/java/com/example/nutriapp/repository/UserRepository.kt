@@ -1,42 +1,98 @@
 package com.example.nutriapp.repository
 
-import androidx.compose.runtime.mutableStateListOf
 import com.example.nutriapp.model.User
+import com.example.nutriapp.network.ApiService
+import com.example.nutriapp.network.LoginRequest
+import com.example.nutriapp.network.NuevoPesoRequest
+import com.example.nutriapp.network.RegistrationRequest
+import com.example.nutriapp.network.UsuarioDTO
+import com.example.nutriapp.network.UsuarioUpdateRequest
+import retrofit2.Response
+import javax.inject.Inject
+import javax.inject.Singleton
 
-enum class RegistrationResult {
-    SUCCESS,
-    USERNAME_EXISTS,
-    EMAIL_EXISTS,
-    FAILED
+// Resultado sellado para un manejo de errores más robusto
+sealed class RegistrationResult {
+    object Success : RegistrationResult()
+    data class Error(val message: String) : RegistrationResult()
 }
 
-object UserRepository {
-    private val initialUsers = listOf(
-        User(
-            fullName = "Tester Account",
-            username = "tester",
-            email = "tester@nutriapp.com",
-            passwordHash = "Tester1234"
-        )
-    )
+@Singleton
+class UserRepository @Inject constructor(
+    private val backendApiService: ApiService
+) {
 
-    private val users = mutableStateListOf<User>(*initialUsers.toTypedArray())
-
-    fun addUser(user: User): RegistrationResult {
-        if (users.any { it.username.equals(user.username, ignoreCase = true) }) {
-            return RegistrationResult.USERNAME_EXISTS
-        }
-        if (users.any { it.email.equals(user.email, ignoreCase = true) }) {
-            return RegistrationResult.EMAIL_EXISTS
-        }
-        return if (users.add(user)) {
-            RegistrationResult.SUCCESS
-        } else {
-            RegistrationResult.FAILED
+    // ... (otras funciones como getWeightHistory, etc. no cambian)
+    suspend fun getWeightHistory(userId: Long): List<Float> {
+        return try {
+            val response = backendApiService.getHistorialPeso(userId)
+            response.embedded?.historial?.map { it.peso.toFloat() } ?: emptyList()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
         }
     }
 
-    fun findUser(usernameOrEmail: String, passwordAttempt: String): User? {
-        return users.find { (it.username.equals(usernameOrEmail, ignoreCase = true) || it.email.equals(usernameOrEmail, ignoreCase = true)) && it.passwordHash == passwordAttempt }
+    suspend fun saveNewWeight(userId: Long, weight: Double): Boolean {
+        return try {
+            val request = NuevoPesoRequest(peso = weight)
+            backendApiService.addPesoEntry(userId, request)
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    suspend fun getUserData(userId: Long): UsuarioDTO? {
+        return try {
+            backendApiService.getUsuarioById(userId)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    suspend fun updateUserGoals(userId: Long, calories: Int, protein: Int, carbs: Int, fat: Int): Boolean {
+        return try {
+            val request = UsuarioUpdateRequest(metaCalorias = calories, metaProteinas = protein, metaCarbos = carbs, metaGrasas = fat)
+            backendApiService.updateUsuario(userId, request)
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    // --- FUNCIÓN DE REGISTRO CORREGIDA ---
+    suspend fun addUser(user: User): RegistrationResult {
+        return try {
+            val request = RegistrationRequest(
+                fullName = user.fullName,       // Usa fullName
+                username = user.username,
+                email = user.email,
+                passwordHash = user.passwordHash  // Usa passwordHash
+            )
+            val response: Response<Void> = backendApiService.registerUser(request)
+            if (response.isSuccessful) {
+                RegistrationResult.Success
+            } else {
+                val errorBody = response.errorBody()?.string() ?: "Error de registro desconocido"
+                RegistrationResult.Error(errorBody)
+            }
+        } catch (e: Exception) {
+            RegistrationResult.Error(e.message ?: "Error de conexión")
+        }
+    }
+
+    // --- FUNCIÓN DE LOGIN CORREGIDA ---
+    suspend fun findUser(usernameOrEmail: String, passwordAttempt: String): UsuarioDTO? {
+        return try {
+            val request = LoginRequest(usernameOrEmail, passwordAttempt)
+            backendApiService.loginUser(request)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 }

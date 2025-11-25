@@ -47,6 +47,7 @@ import com.example.nutriapp.R
 import com.example.nutriapp.navigation.NavItem
 import kotlinx.coroutines.delay
 
+// Lista de datos curiosos sobre nutrición para mostrar en la pantalla de transición.
 private val nutritionFacts = listOf(
     "Las zanahorias no siempre fueron naranjas. Originalmente eran moradas o amarillas.",
     "El brócoli contiene más proteína por caloría que un filete.",
@@ -64,15 +65,23 @@ private val nutritionFacts = listOf(
     "La quinoa es uno de los pocos alimentos vegetales que son una proteína completa."
 )
 
+/**
+ * Composable que representa una pantalla de transición animada después de un inicio de sesión exitoso.
+ * Muestra una bienvenida, un dato curioso y luego navega a la pantalla principal.
+ *
+ * @param navController Controlador de navegación para redirigir al usuario a la pantalla de inicio.
+ * @param username El nombre del usuario que se mostrará en el mensaje de bienvenida.
+ */
 @Composable
 fun TransicionLogin(navController: NavController, username: String) {
     var isLoading by remember { mutableStateOf(true) }
     var showContent by remember { mutableStateOf(false) }
-    val randomFact = remember { nutritionFacts.random() }
+    val randomFact = remember { nutritionFacts.random() } // Elige un dato curioso al azar
     
-    var textLength by remember { mutableIntStateOf(0) }
-    var startProgress by remember { mutableStateOf(false) }
+    var textLength by remember { mutableIntStateOf(0) } // Controla la longitud del texto para el efecto de máquina de escribir
+    var startProgress by remember { mutableStateOf(false) } // Inicia la barra de progreso
 
+    // Animación de pulso para la imagen de la nutria
     val infiniteTransition = rememberInfiniteTransition(label = "NutriaPulse")
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -84,19 +93,23 @@ fun TransicionLogin(navController: NavController, username: String) {
         label = "NutriaScale"
     )
 
+    // Orquesta la secuencia de animaciones y la navegación
     LaunchedEffect(Unit) {
-        delay(2000)
+        delay(2000) // Muestra el indicador de carga inicial
         isLoading = false
         showContent = true
 
+        // Anima el efecto de máquina de escribir para el dato curioso
         val typewriterDuration = randomFact.length * 50
         animate(0f, randomFact.length.toFloat(), animationSpec = tween(typewriterDuration)) {
             value, _ -> textLength = value.toInt()
         }
 
+        // Inicia la barra de progreso y espera antes de navegar
         startProgress = true
         delay(2000)
 
+        // Navega a la pantalla de inicio y limpia la pila de navegación
         navController.navigate(NavItem.Home.route + "/$username") {
             popUpTo(NavItem.Login.route) { inclusive = true }
             launchSingleTop = true
@@ -108,10 +121,12 @@ fun TransicionLogin(navController: NavController, username: String) {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
+        // Muestra un indicador de carga al principio
         if (isLoading) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, modifier = Modifier.align(Alignment.Center))
         }
 
+        // Contenido principal que aparece después de la carga inicial
         AnimatedVisibility(
             modifier = Modifier.align(Alignment.Center).padding(horizontal = 24.dp),
             visible = showContent,
@@ -153,6 +168,7 @@ fun TransicionLogin(navController: NavController, username: String) {
             }
         }
 
+        // Barra de progreso lineal en la parte superior
         val animatedProgress by animateFloatAsState(
             targetValue = if (startProgress) 1f else 0f, 
             label = "TransitionProgress", 

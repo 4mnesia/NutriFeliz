@@ -48,7 +48,6 @@ import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -497,10 +496,7 @@ fun FormACtivity(clicked: Boolean,
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                     },
                     modifier = Modifier
-                        .menuAnchor(
-                            ExposedDropdownMenuAnchorType.PrimaryEditable,
-                            enabled = true
-                        )
+                        .menuAnchor()
                         .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
@@ -689,10 +685,7 @@ fun FormFood(
                     label = { Text("Tipo de Comida") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = tipoComidaExpanded) },
                     modifier = Modifier
-                        .menuAnchor(
-                            ExposedDropdownMenuAnchorType.PrimaryEditable,
-                            enabled = true
-                        )
+                        .menuAnchor()
                         .fillMaxWidth()
                 )
                 ExposedDropdownMenu(

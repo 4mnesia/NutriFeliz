@@ -9,15 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -27,20 +19,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
@@ -52,18 +41,19 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.nutriapp.repository.RegistrationResult
 import com.example.nutriapp.navigation.NavItem
 import com.example.nutriapp.util.PasswordStrength
+import com.example.nutriapp.viewmodel.RegistrationStatus
 import com.example.nutriapp.viewmodel.RegistrationViewModel
 import kotlinx.coroutines.delay
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun RegistrationScreen(
     navController: NavController,
-    registrationViewModel: RegistrationViewModel = viewModel()
+    registrationViewModel: RegistrationViewModel = hiltViewModel()
 ) {
     val uiState by registrationViewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
@@ -79,9 +69,9 @@ fun RegistrationScreen(
         startAnimation = true
     }
 
-    LaunchedEffect(uiState.registrationResult) {
-        if (uiState.registrationResult == RegistrationResult.SUCCESS) {
-            delay(2000) // Espera 2 segundos
+    LaunchedEffect(uiState.registrationStatus) {
+        if (uiState.registrationStatus == RegistrationStatus.SUCCESS) {
+            delay(1000)
             navController.navigate(NavItem.Login.route) {
                 popUpTo(NavItem.Login.route) { inclusive = true }
             }
@@ -144,7 +134,7 @@ fun RegistrationScreen(
                         value = uiState.username,
                         onValueChange = registrationViewModel::onUsernameChange,
                         label = { Text(text = "Nombre de Usuario") },
-                        isError = uiState.registrationResult == RegistrationResult.USERNAME_EXISTS,
+                        isError = uiState.registrationStatus == RegistrationStatus.ERROR,
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         keyboardActions = KeyboardActions(onNext = { emailFocus.requestFocus() })
@@ -160,7 +150,7 @@ fun RegistrationScreen(
                         value = uiState.email,
                         onValueChange = registrationViewModel::onEmailChange,
                         label = { Text(text = "Tu email") },
-                        isError = !uiState.isEmailValid && uiState.email.isNotEmpty() || uiState.registrationResult == RegistrationResult.EMAIL_EXISTS,
+                        isError = (!uiState.isEmailValid && uiState.email.isNotEmpty()) || uiState.registrationStatus == RegistrationStatus.ERROR,
                         supportingText = { if (!uiState.isEmailValid && uiState.email.isNotEmpty()) Text("Formato de email no válido") },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
@@ -214,7 +204,7 @@ fun RegistrationScreen(
                                 }
                             }
                         ),
-                        trailingIcon = { // ICONO AÑADIDO
+                        trailingIcon = { 
                             val image = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
                             IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                                 Icon(imageVector = image, contentDescription = "Toggle password visibility")
@@ -228,25 +218,29 @@ fun RegistrationScreen(
                     Button(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = registrationViewModel::registerUser,
-                        enabled = uiState.isFormValid
+                        enabled = uiState.isFormValid && uiState.registrationStatus != RegistrationStatus.LOADING
                     ) {
-                        Text(text = "Registrarse")
+                        if (uiState.registrationStatus == RegistrationStatus.LOADING) {
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
+                        } else {
+                            Text(text = "Registrarse")
+                        }
                     }
                 }
 
-                if (uiState.registrationResult != null) {
-                    val message = when (uiState.registrationResult) {
-                        RegistrationResult.SUCCESS -> "¡Se ha registrado con éxito! Redirigiendo..."
-                        RegistrationResult.USERNAME_EXISTS -> "Error: El nombre de usuario ya existe."
-                        RegistrationResult.EMAIL_EXISTS -> "Error: El correo electrónico ya está en uso."
-                        RegistrationResult.FAILED -> "Error: No se pudo completar el registro."
-                        else -> ""
-                    }
-                    val color = if (uiState.registrationResult == RegistrationResult.SUCCESS) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
+                if (uiState.registrationStatus == RegistrationStatus.SUCCESS) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = message,
-                        color = color,
+                        text = "¡Se ha registrado con éxito! Redirigiendo...",
+                        color = MaterialTheme.colorScheme.tertiary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                } else if (uiState.registrationStatus == RegistrationStatus.ERROR) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = uiState.errorMessage ?: "Ocurrió un error desconocido",
+                        color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold
                     )
