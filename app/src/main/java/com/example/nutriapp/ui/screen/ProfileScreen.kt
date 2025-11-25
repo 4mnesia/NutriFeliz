@@ -4,8 +4,10 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -70,9 +72,19 @@ import com.example.nutriapp.viewmodel.home.HomeViewModel
 import kotlinx.coroutines.launch
 import java.io.File
 
-
-@OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("DefaultLocale")
+/**
+ * Composable que representa la pantalla de perfil del usuario.
+ * Muestra la información del usuario, permite cambiar la foto de perfil, registrar el peso
+ * y contiene una calculadora de macronutrientes.
+ *
+ * @param username El nombre del usuario a mostrar.
+ * @param onLogout Callback que se ejecuta cuando el usuario cierra la sesión.
+ * @param navController Controlador de navegación para manejar las transiciones.
+ * @param homeViewModel ViewModel compartido que gestiona el estado y la lógica de negocio.
+ */
+@RequiresApi(Build.VERSION_CODES.O) // Anotación necesaria porque usamos APIs de java.time en el ViewModel.
+@OptIn(ExperimentalMaterial3Api::class) // Anotación para usar componentes experimentales de Material 3.
+@SuppressLint("DefaultLocale") // Suprime advertencias de formato de texto, ya que lo controlamos nosotros.
 @Composable
 fun ProfileScreen(
     username: String,
@@ -80,143 +92,160 @@ fun ProfileScreen(
     navController: NavController,
     homeViewModel: HomeViewModel
 ) {
+
+    // --- ESTADOS DE LA UI ---
+    // Cada `remember` crea una variable de estado que sobrevive a las recomposiciones de la UI.
+
+    // Controla si la sección de la calculadora de macros es visible o no.
     var showDetails by remember { mutableStateOf(false) }
+    
+    // Estados para los campos de texto de la calculadora de macros.
     var weightForMacros by remember { mutableStateOf("") }
     var height by remember { mutableStateOf("") }
     var age by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("Seleccionar sexo") }
     var activityLevel by remember { mutableStateOf("Seleccionar nivel") }
     var goal by remember { mutableStateOf("Seleccionar objetivo") }
+    
+    // Estados para almacenar los resultados de los cálculos.
     var imc by remember { mutableStateOf<Double?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var showDialog by remember { mutableStateOf(false) }
-    var weightForChart by remember { mutableStateOf("") }
-
     var calculatedCalories by remember { mutableStateOf<Int?>(null) }
     var calculatedProteins by remember { mutableStateOf<Int?>(null) }
     var calculatedCarbs by remember { mutableStateOf<Int?>(null) }
     var calculatedFats by remember { mutableStateOf<Int?>(null) }
 
+    // Estado para la foto de perfil seleccionada por el usuario.
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    // Controla la visibilidad del diálogo para elegir entre cámara o galería.
+    var showDialog by remember { mutableStateOf(false) }
+    // Estado para el campo de texto de registro de peso.
+    var weightForChart by remember { mutableStateOf("") }
+
+    // --- UTILIDADES DE COMPOSE ---
+
+    // Estado para mostrar mensajes temporales (Snackbars).
     val snackbarHostState = remember { SnackbarHostState() }
+    // CoroutineScope para lanzar operaciones asíncronas desde la UI (como mostrar un Snackbar).
     val scope = rememberCoroutineScope()
+    // Contexto de la aplicación, necesario para permisos y acceso a archivos.
     val context = LocalContext.current
+    // Gestor de foco para poder ocultar el teclado programáticamente.
     val focusManager = LocalFocusManager.current
 
+    // Estado temporal para guardar la URI de la foto tomada con la cámara.
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
 
+    // --- LANZADORES DE ACTIVIDADES (Activity Result Launchers) ---
+    // Estos son los nuevos métodos en Compose para manejar los resultados de otras apps (galería, cámara, permisos).
+
+    // Lanzador para abrir la galería y obtener una imagen.
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        imageUri = uri
+        imageUri = uri // Cuando el usuario selecciona una imagen, actualizamos el estado.
     }
 
+    // Lanzador para abrir la cámara y tomar una foto.
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success: Boolean ->
         if (success) {
-            imageUri = tempCameraUri
+            imageUri = tempCameraUri // Si la foto se tomó con éxito, usamos la URI temporal guardada.
         }
     }
-
+    
+    // Función para crear un archivo temporal y lanzar la cámara.
     fun launchCamera() {
         val file = File.createTempFile(
             "profile_image_${System.currentTimeMillis()}",
             ".jpg",
             context.cacheDir
         )
+        // Se usa un FileProvider para compartir la URI del archivo de forma segura con la app de la cámara.
         val uri = FileProvider.getUriForFile(
             context,
             "${context.packageName}.provider",
             file
         )
-        tempCameraUri = uri
+        tempCameraUri = uri // Guardamos la URI antes de lanzar la cámara.
         cameraLauncher.launch(uri)
     }
 
+    // Lanzador para solicitar el permiso de la cámara.
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            launchCamera()
+            launchCamera() // Si el usuario concede el permiso, lanzamos la cámara.
         } else {
+            // Si lo deniega, mostramos un mensaje informativo.
             scope.launch {
                 snackbarHostState.showSnackbar("Permiso de cámara denegado.")
             }
         }
     }
 
-
+    // --- ESTRUCTURA PRINCIPAL DE LA PANTALLA ---
     Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) } // Lugar donde se mostrarán los Snackbars.
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = MaterialTheme.colorScheme.background)
                 .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
-                    focusManager.clearFocus()
+                    focusManager.clearFocus() // Oculta el teclado al tocar fuera de un campo de texto.
                 }
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()) // Permite hacer scroll en la pantalla si el contenido es muy largo.
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Diálogo para elegir entre cámara y galería.
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
                     title = { Text("Seleccionar imagen") },
                     text = { Text("Elige una opción") },
                     confirmButton = {
-                        Button(
-                            onClick = {
-                                galleryLauncher.launch("image/*")
-                                showDialog = false
-                            }
-                        ) {
+                        Button(onClick = { galleryLauncher.launch("image/*"); showDialog = false }) {
                             Text("Galería")
                         }
                     },
                     dismissButton = {
-                        Button(
-                            onClick = {
-                                showDialog = false
-                                if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                                    launchCamera()
-                                } else {
-                                    cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                                }
+                        Button(onClick = { 
+                            showDialog = false
+                            // Comprueba si el permiso ya está concedido antes de lanzar la cámara.
+                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                                launchCamera()
+                            } else {
+                                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                             }
-                        ) {
+                        }) {
                             Text("Cámara")
                         }
                     }
                 )
             }
 
-            // Profile Card
+            // --- TARJETA DE PERFIL ---
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {},
+                modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .fillMaxWidth(),
+                    modifier = Modifier.padding(16.dp).fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    // Muestra la imagen seleccionada o un icono por defecto.
                     if (imageUri != null) {
                         Image(
-                            painter = rememberAsyncImagePainter(imageUri),
+                            painter = rememberAsyncImagePainter(imageUri), // Coil se encarga de cargar la imagen de forma asíncrona.
                             contentDescription = "Foto de perfil",
-                            modifier = Modifier
-                                .size(120.dp)
-                                .clip(CircleShape)
-                                .clickable { showDialog = true },
+                            modifier = Modifier.size(120.dp).clip(CircleShape).clickable { showDialog = true },
                             contentScale = ContentScale.Crop
                         )
                     } else {
@@ -224,9 +253,7 @@ fun ProfileScreen(
                             imageVector = Icons.Default.AccountCircle,
                             contentDescription = "Perfil",
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier
-                                .size(120.dp)
-                                .clickable { showDialog = true }
+                            modifier = Modifier.size(120.dp).clickable { showDialog = true }
                         )
                     }
                     Text(username, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
@@ -240,11 +267,9 @@ fun ProfileScreen(
                 }
             }
 
-            // Weight registration card
+            // --- TARJETA DE REGISTRO DE PESO ---
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {},
+                modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
@@ -252,18 +277,16 @@ fun ProfileScreen(
                     Text("Registra tu Peso", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
 
+                    // Función local para evitar duplicar código en el TextField y el Button.
                     fun saveWeight() {
                         if (weightForChart.toFloatOrNull() != null) {
+                            // Llama al ViewModel para guardar el peso en el backend.
                             homeViewModel.onSaveWeight(weightForChart)
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Peso guardado correctamente")
-                            }
-                            weightForChart = ""
-                            focusManager.clearFocus()
+                            scope.launch { snackbarHostState.showSnackbar("Peso guardado correctamente") }
+                            weightForChart = "" // Limpia el campo de texto.
+                            focusManager.clearFocus() // Oculta el teclado.
                         } else {
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Por favor, introduce un peso válido")
-                            }
+                            scope.launch { snackbarHostState.showSnackbar("Por favor, introduce un peso válido") }
                         }
                     }
 
@@ -271,11 +294,8 @@ fun ProfileScreen(
                         value = weightForChart,
                         onValueChange = { weightForChart = it },
                         label = { Text("Peso actual (kg)") },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(onDone = { saveWeight() }),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(onDone = { saveWeight() }), // Permite guardar al pulsar "Done" en el teclado.
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -288,12 +308,11 @@ fun ProfileScreen(
                 }
             }
 
-            // Macro calculator card
+            // --- TARJETA DE LA CALCULADORA DE MACROS ---
+            // Solo se muestra si `showDetails` es true.
             if (showDetails) {
                 Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {},
+                    modifier = Modifier.fillMaxWidth(),
                     elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
@@ -302,77 +321,52 @@ fun ProfileScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
 
+                        // Campos de entrada para los datos del usuario.
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            OutlinedTextField(
-                                value = weightForMacros,
-                                onValueChange = { weightForMacros = it },
-                                label = { Text("Peso (kg)") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.weight(1f)
-                            )
-                            OutlinedTextField(
-                                value = height,
-                                onValueChange = { height = it },
-                                label = { Text("Altura (cm)") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.weight(1f)
-                            )
+                            OutlinedTextField(value = weightForMacros, onValueChange = { weightForMacros = it }, label = { Text("Peso (kg)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f))
+                            OutlinedTextField(value = height, onValueChange = { height = it }, label = { Text("Altura (cm)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f))
                         }
 
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            OutlinedTextField(
-                                value = age,
-                                onValueChange = { age = it },
-                                label = { Text("Edad") },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.weight(1f)
-                            )
-
-                            DropdownMenuSelector(
-                                options = listOf("Hombre", "Mujer"),
-                                selectedOption = gender,
-                                onOptionSelected = { gender = it },
-                                label = "Sexo",
-                                modifier = Modifier.weight(1f)
-                            )
+                            OutlinedTextField(value = age, onValueChange = { age = it }, label = { Text("Edad") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.weight(1f))
+                            DropdownMenuSelector(options = listOf("Hombre", "Mujer"), selectedOption = gender, onOptionSelected = { gender = it }, label = "Sexo", modifier = Modifier.weight(1f))
                         }
 
-                        DropdownMenuSelector(
-                            options = listOf("Sedentario", "Ligero", "Moderado", "Activo"),
-                            selectedOption = activityLevel,
-                            onOptionSelected = { activityLevel = it },
-                            label = "Nivel de actividad"
-                        )
+                        DropdownMenuSelector(options = listOf("Sedentario", "Ligero", "Moderado", "Activo"), selectedOption = activityLevel, onOptionSelected = { activityLevel = it }, label = "Nivel de actividad")
+                        DropdownMenuSelector(options = listOf("Bajar peso", "Mantener peso", "Subir masa muscular"), selectedOption = goal, onOptionSelected = { goal = it }, label = "Objetivo")
 
-                        DropdownMenuSelector(
-                            options = listOf("Bajar peso", "Mantener peso", "Subir masa muscular"),
-                            selectedOption = goal,
-                            onOptionSelected = { goal = it },
-                            label = "Objetivo"
-                        )
-
+                        // Botón para ejecutar la lógica de cálculo.
                         Button(
                             onClick = {
                                 val w = weightForMacros.toDoubleOrNull()
                                 val h = height.toDoubleOrNull()
                                 val a = age.toIntOrNull()
 
+                                // Validación de todos los campos.
                                 if (w == null || h == null || a == null || w <= 0 || h <= 0 || a <= 0 || gender == "Seleccionar sexo" || activityLevel == "Seleccionar nivel" || goal == "Seleccionar objetivo") {
                                     errorMessage = "Completa todos los campos."
                                     imc = null
                                     calculatedCalories = null
                                 } else {
                                     errorMessage = null
-                                    val hMeters = h / 100
-                                    imc = w / (hMeters * hMeters)
+                                    // Cálculo del IMC.
+                                    val calculatedImc = w / ((h / 100) * (h / 100))
+                                    imc = calculatedImc
 
-                                    val bmr = if (gender == "Hombre") 10 * w + 6.25 * h - 5 * a + 5 else 10 * w + 6.25 * h - 5 * a - 161
+                                    // Cálculo de la Tasa Metabólica Basal (TMB) con la fórmula de Harris-Benedict.
+                                    val bmr = if (gender == "Hombre") {
+                                        88.362 + (13.397 * w) + (4.799 * h) - (5.677 * a)
+                                    } else { // Mujer
+                                        447.593 + (9.247 * w) + (3.098 * h) - (4.330 * a)
+                                    }
+
+                                    // Multiplicador de actividad física.
                                     val activityMultiplier = when (activityLevel) {
                                         "Sedentario" -> 1.2
                                         "Ligero" -> 1.375
@@ -380,55 +374,49 @@ fun ProfileScreen(
                                         "Activo" -> 1.725
                                         else -> 1.2
                                     }
-                                    val tdee = bmr * activityMultiplier
+
+                                    val maintenanceCalories = bmr * activityMultiplier
+
+                                    // Ajuste de calorías según el objetivo.
                                     val finalCalories = when (goal) {
-                                        "Bajar peso" -> tdee - 500
-                                        "Mantener peso" -> tdee
-                                        "Subir masa muscular" -> tdee + 300
-                                        else -> tdee
-                                    }.toInt()
+                                        "Bajar peso" -> maintenanceCalories - 500
+                                        "Mantener peso" -> maintenanceCalories
+                                        "Subir masa muscular" -> maintenanceCalories + 500
+                                        else -> maintenanceCalories
+                                    }
+                                    calculatedCalories = finalCalories.toInt()
 
-                                    val protein = (w * 2).toInt()
-                                    val fat = w.toInt()
-                                    val proteinCalories = protein * 4
-                                    val fatCalories = fat * 9
-                                    val carbs = ((finalCalories - proteinCalories - fatCalories) / 4).toInt()
-
-                                    calculatedCalories = finalCalories
-                                    calculatedProteins = protein
-                                    calculatedCarbs = carbs
-                                    calculatedFats = fat
-
-                                    // <-- CORRECCIÓN: Esta línea guarda el peso en el gráfico
-                                    homeViewModel.onSaveWeight(weightForMacros)
+                                    // Distribución de macros (ejemplo: 40% carbos, 30% proteínas, 30% grasas).
+                                    calculatedCarbs = (finalCalories * 0.40 / 4).toInt()
+                                    calculatedProteins = (finalCalories * 0.30 / 4).toInt()
+                                    calculatedFats = (finalCalories * 0.30 / 9).toInt()
                                 }
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Calcular Macros / IMC")
+                            Text("Calcular Macros")
                         }
 
-                        errorMessage?.let {
-                            Text(it, color = MaterialTheme.colorScheme.error)
-                        }
+                        // --- SECCIÓN DE RESULTADOS ---
+                        // Se muestra si hay un error o si los cálculos fueron exitosos.
+                        if (errorMessage != null) {
+                            Text(errorMessage!!, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
+                        } else {
+                            if (imc != null) {
+                                Text("Tu IMC es: %.2f".format(imc), fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+                            }
+                            if (calculatedCalories != null) {
+                                Text("Calorías diarias: $calculatedCalories kcal", fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
+                                Text("Proteínas: $calculatedProteins g", fontWeight = FontWeight.Bold)
+                                Text("Carbohidratos: $calculatedCarbs g", fontWeight = FontWeight.Bold)
+                                Text("Grasas: $calculatedFats g", fontWeight = FontWeight.Bold)
 
-                        imc?.let {
-                            Text(
-                                "Tu IMC es: ${String.format("%.2f", it)}",
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        if (calculatedCalories != null) {
-                            Column(modifier = Modifier.padding(top = 8.dp)) {
-                                Text("Metas calculadas:", style = MaterialTheme.typography.titleMedium)
-                                Text("Calorías: $calculatedCalories kcal")
-                                Text("Proteínas: $calculatedProteins g")
-                                Text("Carbohidratos: $calculatedCarbs g")
-                                Text("Grasas: $calculatedFats g")
-                                Spacer(Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // Botón para guardar las metas calculadas.
                                 Button(
                                     onClick = {
+                                        // Llama al ViewModel para guardar las metas en el backend.
                                         homeViewModel.onUpdateMacroGoals(
                                             calculatedCalories!!,
                                             calculatedProteins!!,
@@ -436,10 +424,11 @@ fun ProfileScreen(
                                             calculatedFats!!
                                         )
                                         scope.launch {
-                                            snackbarHostState.showSnackbar("Metas guardadas correctamente")
+                                            snackbarHostState.showSnackbar("¡Metas guardadas en tu perfil!")
                                         }
                                     },
-                                    modifier = Modifier.fillMaxWidth()
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                                 ) {
                                     Text("Guardar Metas")
                                 }
@@ -452,8 +441,11 @@ fun ProfileScreen(
     }
 }
 
+/**
+ * Un Composable reutilizable para mostrar un menú desplegable (Dropdown).
+ */
 @Composable
-fun DropdownMenuSelector(
+private fun DropdownMenuSelector(
     options: List<String>,
     selectedOption: String,
     onOptionSelected: (String) -> Unit,
@@ -461,35 +453,23 @@ fun DropdownMenuSelector(
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
-
-    Column(modifier = modifier) {
-        Text(
-            label,
-            fontWeight = FontWeight.Bold,
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Box {
-            OutlinedButton(
-                onClick = { expanded = true },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(selectedOption)
-            }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface)
-            ) {
-                options.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option) },
-                        onClick = {
-                            onOptionSelected(option)
-                            expanded = false
-                        }
-                    )
-                }
+    Box(modifier = modifier) {
+        OutlinedButton(
+            onClick = { expanded = true },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(selectedOption.ifEmpty { label })
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(text = { Text(option) }, onClick = {
+                    onOptionSelected(option)
+                    expanded = false
+                })
             }
         }
     }
@@ -499,6 +479,7 @@ fun DropdownMenuSelector(
 @Composable
 fun ProfileScreenPreview() {
     NutriAppTheme {
-        // ProfileScreen requires a HomeViewModel, so we can't easily preview it.
+        // La preview no funcionará correctamente con el ViewModel, por lo que se deja vacía o con datos de prueba.
+        // ProfileScreen("Flavio", {}, rememberNavController(), hiltViewModel())
     }
 }

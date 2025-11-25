@@ -1,5 +1,7 @@
 package com.example.nutriapp.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -10,7 +12,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -19,29 +21,28 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
 import com.example.nutriapp.ui.component.BottomNavigationBar
 import com.example.nutriapp.ui.component.TopBar
-import com.example.nutriapp.ui.screen.HomeScreen
-import com.example.nutriapp.ui.screen.LoginScreen
-import com.example.nutriapp.ui.screen.ProfileScreen
-import com.example.nutriapp.ui.screen.ProgressScreen
-import com.example.nutriapp.ui.screen.RegistrationScreen
-import com.example.nutriapp.ui.screen.SettingsScreen
-import com.example.nutriapp.ui.screen.TransicionLogin
+import com.example.nutriapp.ui.screen.*
 import com.example.nutriapp.ui.theme.ColorProfile
 import com.example.nutriapp.ui.theme.NutriAppTheme
+import com.example.nutriapp.viewmodel.LoginViewModel
+import com.example.nutriapp.viewmodel.RegistrationViewModel
 import com.example.nutriapp.viewmodel.home.HomeViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavigationApp(
     navController: NavHostController,
     colorProfile: ColorProfile,
     setColorProfile: (ColorProfile) -> Unit,
-    homeViewModel: HomeViewModel = viewModel()
+    darkTheme: Boolean // <-- PARÁMETRO AÑADIDO
 ) {
+    val homeViewModel: HomeViewModel = hiltViewModel()
+    
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val username = navBackStackEntry?.arguments?.getString("username") ?: "Usuario"
 
-    NutriAppTheme(darkTheme = colorProfile == ColorProfile.PREDETERMINADO, colorProfile = colorProfile, dynamicColor = false) {
+    NutriAppTheme(darkTheme = darkTheme, colorProfile = colorProfile, dynamicColor = false) {
         val screensWithBottomBar = listOf(
             NavItem.Home.route,
             NavItem.Progress.route,
@@ -69,44 +70,20 @@ fun NavigationApp(
                 NavHost(
                     navController = navController,
                     startDestination = NavItem.Login.route,
-                    enterTransition = {
-                        val initialRoute = initialState.destination.route?.substringBefore("/")
-                        val targetRoute = targetState.destination.route?.substringBefore("/")
-                        val initialIndex = screensWithBottomBar.indexOf(initialRoute)
-                        val targetIndex = screensWithBottomBar.indexOf(targetRoute)
-
-                        if (initialIndex != -1 && targetIndex != -1) {
-                            val direction = if (targetIndex > initialIndex) 1 else -1
-                            slideInHorizontally(
-                                initialOffsetX = { 1000 * direction },
-                                animationSpec = tween(500)
-                            )
-                        } else {
-                            slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500))
-                        }
+                    enterTransition = { 
+                        slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(500))
                     },
-                    exitTransition = {
-                        val initialRoute = initialState.destination.route?.substringBefore("/")
-                        val targetRoute = targetState.destination.route?.substringBefore("/")
-                        val initialIndex = screensWithBottomBar.indexOf(initialRoute)
-                        val targetIndex = screensWithBottomBar.indexOf(targetRoute)
-
-                        if (initialIndex != -1 && targetIndex != -1) {
-                            val direction = if (targetIndex > initialIndex) 1 else -1
-                            slideOutHorizontally(
-                                targetOffsetX = { -1000 * direction },
-                                animationSpec = tween(500)
-                            )
-                        } else {
-                            slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500))
-                        }
+                    exitTransition = { 
+                        slideOutHorizontally(targetOffsetX = { -1000 }, animationSpec = tween(500))
                     }
                 ) {
                     composable(NavItem.Login.route) {
-                        LoginScreen(navController = navController)
+                        val loginViewModel: LoginViewModel = hiltViewModel()
+                        LoginScreen(navController = navController, loginViewModel = loginViewModel)
                     }
                     composable(NavItem.Registration.route) {
-                        RegistrationScreen(navController = navController)
+                        val registrationViewModel: RegistrationViewModel = hiltViewModel()
+                        RegistrationScreen(navController = navController, registrationViewModel = registrationViewModel)
                     }
                     composable(
                         route = NavItem.TransicionLogin.route + "/{username}",
@@ -120,7 +97,14 @@ fun NavigationApp(
                         arguments = listOf(navArgument("username") { type = NavType.StringType })
                     ) { backStackEntry ->
                         val user = backStackEntry.arguments?.getString("username") ?: "Usuario"
-                        HomeScreen(navController = navController, username = user, homeViewModel = homeViewModel)
+                        // ¡Le pasamos los parámetros del tema a la HomeScreen!
+                        HomeScreen(
+                            navController = navController, 
+                            username = user, 
+                            homeViewModel = homeViewModel,
+                            darkTheme = darkTheme,
+                            colorProfile = colorProfile
+                        )
                     }
                     composable(
                         route = NavItem.Progress.route + "/{username}",

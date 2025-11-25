@@ -53,7 +53,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.nutriapp.R
@@ -62,10 +62,17 @@ import com.example.nutriapp.ui.theme.NutriAppTheme
 import com.example.nutriapp.viewmodel.LoginStatus
 import com.example.nutriapp.viewmodel.LoginViewModel
 
+/**
+ * Composable que representa la pantalla de inicio de sesión.
+ * Permite al usuario introducir sus credenciales y navegar a la pantalla de registro.
+ *
+ * @param navController Controlador de navegación para gestionar las transiciones.
+ * @param loginViewModel ViewModel que contiene la lógica y el estado del formulario de login. Es inyectado por Hilt.
+ */
 @Composable
 fun LoginScreen(
     navController: NavController,
-    loginViewModel: LoginViewModel = viewModel()
+    loginViewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by loginViewModel.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
@@ -73,18 +80,22 @@ fun LoginScreen(
     val passwordFocusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
+    // Inicia la animación de entrada cuando la pantalla se compone por primera vez.
     LaunchedEffect(Unit) {
         startAnimation = true
     }
 
+    // Efecto que se ejecuta cuando el estado del login cambia.
+    // Si el login es exitoso, navega a la siguiente pantalla y limpia el estado.
     LaunchedEffect(uiState.loginStatus) {
         if (uiState.loginStatus == LoginStatus.SUCCESS) {
-            val user = uiState.loggedInUser
-            if (user != null) {
+            uiState.loggedInUser?.let { user ->
+                // Navega a la pantalla de transición pasando el nombre de usuario.
                 navController.navigate(NavItem.TransicionLogin.route + "/${user.username}") {
+                    // Limpia la pila de navegación hasta el login para que el usuario no pueda volver atrás.
                     popUpTo(NavItem.Login.route) { inclusive = true }
                 }
-                loginViewModel.onNavigationHandled()
+                loginViewModel.onNavigationHandled() // Resetea el estado para evitar re-navegación.
             }
         }
     }
@@ -94,7 +105,7 @@ fun LoginScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) {
-                focusManager.clearFocus()
+                focusManager.clearFocus() // Oculta el teclado al tocar fuera de los campos de texto.
             },
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -135,6 +146,7 @@ fun LoginScreen(
                 )
             }
 
+            // Muestra un mensaje de error si el login falla.
             if (uiState.loginStatus == LoginStatus.ERROR) {
                 Text(
                     text = "Usuario o contraseña incorrectos",
@@ -146,6 +158,7 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Campo de texto para el email o nombre de usuario.
             AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 600)) + fadeIn(tween(1000, 600))) {
                 OutlinedTextField(
                     value = uiState.usernameOrEmail,
@@ -161,6 +174,7 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier.height(4.dp))
 
+            // Campo de texto para la contraseña.
             AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 800)) + fadeIn(tween(1000, 800))) {
                 OutlinedTextField(
                     value = uiState.password,
@@ -189,6 +203,8 @@ fun LoginScreen(
                 )
             }
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Botones de acción.
             AnimatedVisibility(visible = startAnimation, enter = slideInVertically(animationSpec = tween(1000, 1000)) + fadeIn(tween(1000, 1000))) {
                 Row(horizontalArrangement = Arrangement.Center) {
                     Button(
@@ -217,13 +233,12 @@ fun LoginScreen(
         }
     }
 }
+
 @Preview(name = "Login Screen Preview", showBackground = true)
 @Composable
 private fun LoginScreenPreview() {
-
     NutriAppTheme {
-        LoginScreen(
-            navController = rememberNavController()
-        )
+        // El preview no puede usar un Hilt ViewModel, por lo que el estado no será funcional.
+        LoginScreen(navController = rememberNavController())
     }
 }

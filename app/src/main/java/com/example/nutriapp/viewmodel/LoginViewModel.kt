@@ -2,25 +2,31 @@ package com.example.nutriapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.nutriapp.model.User
+import com.example.nutriapp.network.UsuarioDTO // Importamos el DTO de red
 import com.example.nutriapp.repository.UserRepository
-import kotlinx.coroutines.delay
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 enum class LoginStatus { IDLE, SUCCESS, ERROR, LOADING }
 
+// --- ¡CORRECCIÓN 1! ---
+// Cambiamos el tipo de `loggedInUser` para que coincida con la respuesta del backend.
 data class LoginUiState(
     val usernameOrEmail: String = "",
     val password: String = "",
     val loginStatus: LoginStatus = LoginStatus.IDLE,
-    val loggedInUser: User? = null
+    val loggedInUser: UsuarioDTO? = null // Antes era User?
 )
 
-open class LoginViewModel : ViewModel() {
+@HiltViewModel
+open class LoginViewModel @Inject constructor(
+    private val userRepository: UserRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
@@ -37,15 +43,22 @@ open class LoginViewModel : ViewModel() {
         _uiState.update { it.copy(loginStatus = LoginStatus.IDLE) }
     }
 
+    // --- ¡CORRECCIÓN 2! ---
+    // La lógica ahora maneja el objeto UsuarioDTO que viene del repositorio.
     fun login() {
         viewModelScope.launch {
             _uiState.update { it.copy(loginStatus = LoginStatus.LOADING) }
             val state = _uiState.value
-            val user = UserRepository.findUser(state.usernameOrEmail, state.password)
-            if (user != null) {
-                delay(500)
-                _uiState.update { it.copy(loginStatus = LoginStatus.SUCCESS, loggedInUser = user) }
-            } else {
+            try {
+                // userRepository.findUser ahora devuelve un UsuarioDTO?
+                val userDto = userRepository.findUser(state.usernameOrEmail, state.password)
+                if (userDto != null) {
+                    _uiState.update { it.copy(loginStatus = LoginStatus.SUCCESS, loggedInUser = userDto) }
+                } else {
+                    _uiState.update { it.copy(loginStatus = LoginStatus.ERROR) }
+                }
+            } catch (e: Exception) {
+                // Capturamos cualquier error de red o de otro tipo
                 _uiState.update { it.copy(loginStatus = LoginStatus.ERROR) }
             }
         }

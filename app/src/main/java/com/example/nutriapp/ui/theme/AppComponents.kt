@@ -10,7 +10,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 
-// -------------------- TEXTOS --------------------
+/**
+ * Componente de texto genérico para la aplicación.
+ * Utiliza los estilos definidos en [AppThemeDefaults].
+ *
+ * @param text El texto a mostrar.
+ * @param modifier Modificador de Compose.
+ * @param style El estilo de texto a aplicar.
+ */
 @Composable
 fun AppText(
     text: String,
@@ -24,6 +31,14 @@ fun AppText(
     )
 }
 
+/**
+ * Componente para mostrar títulos en la aplicación.
+ * Utiliza el estilo de título definido en [AppThemeDefaults].
+ *
+ * @param text El texto del título.
+ * @param modifier Modificador de Compose.
+ * @param style El estilo de texto a aplicar.
+ */
 @Composable
 fun AppTitle(
     text: String,
@@ -37,7 +52,13 @@ fun AppTitle(
     )
 }
 
-// -------------------- BOTONES --------------------
+/**
+ * Botón genérico de la aplicación con los colores por defecto.
+ *
+ * @param onClick La acción a ejecutar cuando se presiona el botón.
+ * @param text El texto que se muestra dentro del botón.
+ * @param modifier Modificador de Compose.
+ */
 @Composable
 fun AppButton(
     onClick: () -> Unit,
@@ -53,6 +74,13 @@ fun AppButton(
     }
 }
 
+/**
+ * Contenedor de tipo "Card" con los colores de superficie de la aplicación.
+ * Ideal para agrupar contenido relacionado.
+ *
+ * @param modifier Modificador de Compose.
+ * @param content El contenido a mostrar dentro de la tarjeta.
+ */
 @Composable
 fun AppCard(
     modifier: Modifier = Modifier,
@@ -69,7 +97,13 @@ fun AppCard(
     }
 }
 
-
+/**
+ * Contenedor de tipo "Box" con el color de fondo por defecto de la aplicación.
+ *
+ * @param modifier Modificador de Compose.
+ * @param backgroundColor El color de fondo a aplicar.
+ * @param content El contenido a mostrar dentro de la caja.
+ */
 @Composable
 fun AppBox(
     modifier: Modifier = Modifier,
@@ -82,7 +116,17 @@ fun AppBox(
     )
 }
 
-
+/**
+ * Menú desplegable genérico para la aplicación.
+ *
+ * @param T El tipo de los elementos en el menú.
+ * @param expanded Estado que controla si el menú está abierto o cerrado.
+ * @param onDismissRequest Acción a ejecutar cuando se solicita cerrar el menú.
+ * @param items La lista de elementos a mostrar en el menú.
+ * @param selectedItem El estado mutable que guarda el elemento actualmente seleccionado.
+ * @param modifier Modificador de Compose.
+ * @param itemLabel Función para obtener la etiqueta de texto de cada elemento.
+ */
 @Composable
 fun <T> AppDropdownMenu(
     expanded: Boolean,

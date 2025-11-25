@@ -54,6 +54,15 @@ import com.example.nutriapp.ui.theme.ColorProfile
 import kotlinx.coroutines.delay
 import java.util.Calendar
 
+/**
+ * Composable que representa la pantalla de Ajustes.
+ * Permite al usuario configurar el tema de la aplicación, gestionar las notificaciones y cerrar sesión.
+ *
+ * @param navController Controlador de navegación para volver a la pantalla anterior.
+ * @param colorProfile El perfil de color actual de la aplicación.
+ * @param setColorProfile Callback para cambiar el perfil de color.
+ * @param onLogout Callback que se ejecuta cuando el usuario presiona el botón de cerrar sesión.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -66,14 +75,17 @@ fun SettingsScreen(
     val prefs = remember { NotificationPreferences(context) }
     val alarmScheduler = remember { AlarmScheduler(context) }
 
+    // Estados de la UI para controlar los selectores y diálogos
     var showTimePicker by remember { mutableStateOf(false) }
     var showExactAlarmDialog by remember { mutableStateOf(false) }
 
+    // Estados para la configuración de notificaciones
     var notificationsEnabled by remember { mutableStateOf(prefs.areNotificationsEnabled()) }
     var selectedHour by remember { mutableStateOf(prefs.getHour()) }
     var selectedMinute by remember { mutableStateOf(prefs.getMinute()) }
     var countdownText by remember { mutableStateOf("") }
 
+    // Efecto que se actualiza cada segundo para mostrar la cuenta atrás hasta la próxima notificación.
     LaunchedEffect(key1 = notificationsEnabled, key2 = selectedHour, key3 = selectedMinute) {
         if (notificationsEnabled) {
             while (true) {
@@ -83,7 +95,7 @@ fun SettingsScreen(
                     set(Calendar.MINUTE, selectedMinute)
                     set(Calendar.SECOND, 0)
 
-                    if (before(now)) {
+                    if (before(now)) { // Si la hora ya pasó hoy, se programa para mañana
                         add(Calendar.DATE, 1)
                     }
                 }
@@ -94,13 +106,14 @@ fun SettingsScreen(
                 val seconds = (diff / 1000) % 60
 
                 countdownText = String.format("Próximo recordatorio en: %02d:%02d:%02d", hours, minutes, seconds)
-                delay(1000)
+                delay(1000) // Espera un segundo
             }
         } else {
             countdownText = ""
         }
     }
 
+    // Launcher para solicitar el permiso de notificaciones en Android 13+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
@@ -109,7 +122,7 @@ fun SettingsScreen(
                 prefs.setNotificationsEnabled(true)
                 alarmScheduler.schedule(selectedHour, selectedMinute)
             } else {
-                notificationsEnabled = false
+                notificationsEnabled = false // El usuario denegó el permiso
             }
         }
     )
@@ -126,10 +139,7 @@ fun SettingsScreen(
                 title = { Text("Ajustes") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Atrás"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -147,7 +157,7 @@ fun SettingsScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // Sección de Tema
+            // Sección para cambiar el tema de la aplicación
             Text("Tema", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(16.dp))
             Row(
@@ -179,7 +189,7 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // Sección de Notificaciones
+            // Sección para configurar las notificaciones
             Text("Notificaciones", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
             Row(
                 modifier = Modifier
@@ -193,6 +203,7 @@ fun SettingsScreen(
                     checked = notificationsEnabled,
                     onCheckedChange = { isChecked ->
                         if (isChecked) {
+                            // Lógica para solicitar permisos y activar notificaciones según la versión de Android
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmScheduler.canScheduleExactAlarms()) {
                                 showExactAlarmDialog = true
                             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -249,7 +260,7 @@ fun SettingsScreen(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-            // Sección de Cuenta
+            // Sección para cerrar sesión
             Text("Cuenta", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(8.dp))
             Button(
@@ -262,6 +273,7 @@ fun SettingsScreen(
         }
     }
 
+    // Diálogo para mostrar el selector de hora
     if (showTimePicker) {
         AlertDialog(
             onDismissRequest = { showTimePicker = false },
@@ -292,6 +304,7 @@ fun SettingsScreen(
         )
     }
 
+    // Diálogo para solicitar permiso de alarmas exactas en Android 12+
     if (showExactAlarmDialog) {
         AlertDialog(
             onDismissRequest = { showExactAlarmDialog = false },
