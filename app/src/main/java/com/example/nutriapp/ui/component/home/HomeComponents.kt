@@ -48,6 +48,7 @@ import androidx.compose.material.icons.outlined.WbSunny
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -496,7 +497,10 @@ fun FormACtivity(clicked: Boolean,
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                     },
                     modifier = Modifier
-                        .menuAnchor()
+                        .menuAnchor(
+                            ExposedDropdownMenuAnchorType.PrimaryEditable,
+                            enabled = true
+                        )
                         .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
@@ -685,7 +689,10 @@ fun FormFood(
                     label = { Text("Tipo de Comida") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = tipoComidaExpanded) },
                     modifier = Modifier
-                        .menuAnchor()
+                        .menuAnchor(
+                            ExposedDropdownMenuAnchorType.PrimaryEditable,
+                            enabled = true
+                        )
                         .fillMaxWidth()
                 )
                 ExposedDropdownMenu(
@@ -710,19 +717,19 @@ fun FormFood(
                     texto = "Guardar Comida",
                     enabled = (cantidad.toIntOrNull() ?: 0) > 0,
                     onClick = {
-                         onGuardarComida(alimentoSeleccionado!!, cantidad.toInt(), tipoComida)
-                         onDismiss()
+                        onGuardarComida(alimentoSeleccionado!!, cantidad.toInt(), tipoComida)
+                        onDismiss()
                     }
                 )
             } else {
                 // Si no hay seleccionado, permitimos buscar directamente en API
                 val sePuedeBuscarAPI = textoDeBusqueda.isNotBlank() && (cantidad.toIntOrNull() ?: 0) > 0
-                 FormularioPrincipalButton(
+                FormularioPrincipalButton(
                     texto = "Buscar y Guardar",
                     enabled = sePuedeBuscarAPI,
                     onClick = {
-                         onBuscarComida(textoDeBusqueda, cantidad.toInt(), tipoComida)
-                         onDismiss()
+                        onBuscarComida(textoDeBusqueda, cantidad.toInt(), tipoComida)
+                        onDismiss()
                     }
                 )
             }

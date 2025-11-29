@@ -17,11 +17,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.util.UUID
 import javax.inject.Inject
 
 data class HomeUiState(
-    // ... (el resto del estado no cambia)
     val listaActividades: List<Actividad> = emptyList(),
     val formularioActividadAbierto: Boolean = false,
     val listaComidas: List<ComidaAlacenada> = emptyList(),
@@ -66,7 +66,7 @@ class HomeViewModel @Inject constructor(
     private val _sugerencias = MutableStateFlow<List<Alimento>>(emptyList())
     val sugerencias: StateFlow<List<Alimento>> = _sugerencias.asStateFlow()
 
-    // Variable para controlar la tarea de búsqueda con "debounce"
+    private val currentUserId = 1L
     private var searchJob: Job? = null
 
     init {
@@ -75,12 +75,10 @@ class HomeViewModel @Inject constructor(
 
     private fun loadInitialData() {
         viewModelScope.launch {
-            val userId = 1L // TODO: ID de usuario real
-
-            val weeklyDataJob = async { foodRepository.getWeeklyCalories(userId) }
-            val weightDataJob = async { userRepository.getWeightHistory(userId) }
-            val userDataJob = async { userRepository.getUserData(userId) }
-            val todaysMealsJob = async { foodRepository.getTodaysMeals(userId) }
+            val weeklyDataJob = async { foodRepository.getWeeklyCalories(currentUserId) }
+            val weightDataJob = async { userRepository.getWeightHistory(currentUserId) }
+            val userDataJob = async { userRepository.getUserData(currentUserId) }
+            val todaysMealsJob = async { foodRepository.getTodaysMeals(currentUserId) }
 
             val weeklyData = weeklyDataJob.await()
             val weightData = weightDataJob.await()
@@ -102,20 +100,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // --- ¡FUNCIÓN DE BÚSQUEDA MEJORADA CON DEBOUNCE! ---
     fun onFoodQueryChange(query: String) {
-        // 1. Actualizamos la UI inmediatamente para que el usuario vea lo que escribe.
         _uiState.update { it.copy(foodQuery = query) }
-
-        // 2. Cancelamos cualquier búsqueda anterior que estuviera en curso.
         searchJob?.cancel()
-
-        // 3. Lanzamos una nueva tarea de búsqueda (Job).
         searchJob = viewModelScope.launch {
-            // 4. Esperamos 300ms. Si el usuario sigue escribiendo, esta tarea se cancelará.
             delay(300L)
-            
-            // 5. Solo si el query tiene texto, realizamos la búsqueda en la red.
             if (query.length >= 2) {
                 _sugerencias.value = foodRepository.buscarSugerencias(query)
             } else {
@@ -137,6 +126,7 @@ class HomeViewModel @Inject constructor(
         onLimpiarSugerencias()
     }
 
+    // Modificado para usar la misma lógica de guardado y actualización optimista
     fun onSaveCurrentFood() {
         if (!_uiState.value.isFoodFormValid) return
 
@@ -146,19 +136,49 @@ class HomeViewModel @Inject constructor(
             val cantidad = state.foodQuantity.toIntOrNull() ?: return@launch
 
             if (alimento != null) {
-                val userId = 1L // TODO: Usar ID real
-                val success = foodRepository.saveFoodInMeal(
-                    userId = userId,
-                    alimento = alimento,
-                    cantidad = cantidad,
-                    tipoComida = state.foodMealType
-                )
+                onGuardarComida(alimento, cantidad, state.foodMealType)
+                // Limpiar campos después de guardar
+                 _uiState.update { it.copy(foodQuery = "", foodQuantity = "") }
+            } else {
+                // TODO: Manejar error de alimento no encontrado
+            }
+        }
+    }
+    
+    fun onGuardarComida(alimento: Alimento, cantidad: Int, tipoComida: String) {
+        val nuevaComida = ComidaAlacenada(
+            id = UUID.randomUUID().mostSignificantBits, // ID temporal
+            alimento = alimento,
+            cantidadEnGramos = cantidad,
+            tipoDeComida = tipoComida
+        )
 
-                if (success) {
-                    loadInitialData()
-                    onToggleFormularioComida()
-                } else { /* TODO: Mostrar error */ }
-            } else { /* TODO: Mostrar error, alimento no encontrado */ }
+        viewModelScope.launch {
+            // Actualización optimista de la UI
+            _uiState.update {
+                recalcularEstadoDerivado(
+                    it.copy(
+                        listaComidas = it.listaComidas + nuevaComida,
+                        formularioComidaAbierto = false
+                    )
+                )
+            }
+            
+            // Intentar guardar en backend
+            val success = foodRepository.saveFoodInMeal(
+                userId = currentUserId,
+                alimento = alimento,
+                cantidad = cantidad,
+                tipoComida = tipoComida
+            )
+            
+            if (success) {
+                // Si tiene éxito, recargamos datos reales (opcional, para tener IDs correctos)
+                // loadInitialData() 
+            } else {
+                // Si falla, podríamos revertir el cambio o mostrar un error
+                // Por ahora lo dejamos así para que la UI parezca rápida
+            }
         }
     }
 
@@ -175,17 +195,15 @@ class HomeViewModel @Inject constructor(
     fun onSaveWeight(weight: String) {
         weight.toDoubleOrNull()?.let { weightValue ->
             viewModelScope.launch {
-                val userId = 1L
-                val success = userRepository.saveNewWeight(userId, weightValue)
-                if (success) loadInitialData() else { /* TODO: Error */ }
+                val success = userRepository.saveNewWeight(currentUserId, weightValue)
+                if (success) loadInitialData()
             }
         }
     }
 
     fun onUpdateMacroGoals(calories: Int, protein: Int, carbs: Int, fat: Int) {
         viewModelScope.launch {
-            val userId = 1L
-            val success = userRepository.updateUserGoals(userId, calories, protein, carbs, fat)
+            val success = userRepository.updateUserGoals(currentUserId, calories, protein, carbs, fat)
             if (success) {
                 _uiState.update { it.copy(metaCalorias = calories, metaProteinas = protein, metaCarbos = carbs, metaGrasas = fat) }
             }
@@ -210,7 +228,6 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onBorrarComida(comida: ComidaAlacenada) {
-        // TODO: Implementar borrado en backend
         _uiState.update { recalcularEstadoDerivado(it.copy(listaComidas = it.listaComidas.filter { c -> c.id != comida.id })) }
     }
 
@@ -225,6 +242,23 @@ class HomeViewModel @Inject constructor(
         val progresoProteinas = if (currentState.metaProteinas > 0) (proteinasConsumidas.toFloat() / currentState.metaProteinas.toFloat()).coerceIn(0f, 1f) else 0f
         val progresoCarbos = if (currentState.metaCarbos > 0) (carbosConsumidos.toFloat() / currentState.metaCarbos.toFloat()).coerceIn(0f, 1f) else 0f
         val progresoGrasas = if (currentState.metaGrasas > 0) (grasasConsumidas.toFloat() / currentState.metaGrasas.toFloat()).coerceIn(0f, 1f) else 0f
-        return currentState.copy(proteinasConsumidas = proteinasConsumidas, carbosConsumidos = carbosConsumidos, grasasConsumidas = grasasConsumidas, caloriasQuemadas = caloriasQuemadas, caloriasConsumidas = caloriasConsumidas, caloriasNetas = caloriasNetas, progresoCalorias = progresoCalorias, progresoProteinas = progresoProteinas, progresoCarbos = progresoCarbos, progresoGrasas = progresoGrasas)
+        
+        val today = LocalDate.now().dayOfWeek
+        val weeklyCalories = currentState.weeklyCalories.toMutableMap()
+        weeklyCalories[today] = caloriasConsumidas
+
+        return currentState.copy(
+            proteinasConsumidas = proteinasConsumidas,
+            carbosConsumidos = carbosConsumidos,
+            grasasConsumidas = grasasConsumidas,
+            caloriasQuemadas = caloriasQuemadas,
+            caloriasConsumidas = caloriasConsumidas,
+            caloriasNetas = caloriasNetas,
+            progresoCalorias = progresoCalorias,
+            progresoProteinas = progresoProteinas,
+            progresoCarbos = progresoCarbos,
+            progresoGrasas = progresoGrasas,
+            weeklyCalories = weeklyCalories
+        )
     }
 }

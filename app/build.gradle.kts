@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "com.example.nutriapp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.nutriapp"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -53,6 +53,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.compose.material3)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
