@@ -54,6 +54,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.compose.material3)
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")

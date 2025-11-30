@@ -55,14 +55,13 @@ fun HomeScreen(
             FormFood(
                 onDismiss = homeViewModel::onToggleFormularioComida,
                 onGuardarComida = { alimento, cantidad, tipoComida ->
-                    // Usamos directamente la función onGuardarComida del ViewModel
                     homeViewModel.onGuardarComida(alimento, cantidad, tipoComida)
                 },
                 onBuscarComida = { query, cantidad, tipoComida ->
                     homeViewModel.onFoodQueryChange(query)
                     homeViewModel.onFoodQuantityChange(cantidad.toString())
                     homeViewModel.onFoodMealTypeChange(tipoComida)
-                    homeViewModel.onSaveCurrentFood()
+                    homeViewModel.onBuscarEnApi(query)
                 },
                 sugerencias = sugerencias,
                 onQueryChange = homeViewModel::onFoodQueryChange

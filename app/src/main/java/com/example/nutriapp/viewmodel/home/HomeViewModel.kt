@@ -1,9 +1,11 @@
 package com.example.nutriapp.viewmodel.home
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nutriapp.data.SessionManager
 import com.example.nutriapp.model.home.*
 import com.example.nutriapp.repository.FoodRepository
 import com.example.nutriapp.repository.UserRepository
@@ -58,55 +60,73 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val foodRepository: FoodRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
     private val _sugerencias = MutableStateFlow<List<Alimento>>(emptyList())
     val sugerencias: StateFlow<List<Alimento>> = _sugerencias.asStateFlow()
 
-    private val currentUserId = 1L
+    private var currentUserId : Long? = null
+
+
     private var searchJob: Job? = null
 
     init {
-        loadInitialData()
+        // 3. Observar el ID del usuario apenas se crea el ViewModel
+        viewModelScope.launch {
+            sessionManager.userId.collect { id ->
+                if (id != null) {
+                    currentUserId = id
+                    loadInitialData()
+                }
+            }
+        }
     }
 
     private fun loadInitialData() {
         viewModelScope.launch {
-            val weeklyDataJob = async { foodRepository.getWeeklyCalories(currentUserId) }
-            val weightDataJob = async { userRepository.getWeightHistory(currentUserId) }
-            val userDataJob = async { userRepository.getUserData(currentUserId) }
-            val todaysMealsJob = async { foodRepository.getTodaysMeals(currentUserId) }
+            try {
+                val weeklyDataJob = async { foodRepository.getWeeklyCalories(currentUserId) }
+                val weightDataJob = async { userRepository.getWeightHistory(currentUserId) }
+                val userDataJob = async { userRepository.getUserData(currentUserId) }
+                val todaysMealsJob = async { foodRepository.getTodaysMeals(currentUserId) }
 
-            val weeklyData = weeklyDataJob.await()
-            val weightData = weightDataJob.await()
-            val userData = userDataJob.await()
-            val todaysMeals = todaysMealsJob.await()
+                val weeklyData = weeklyDataJob.await()
+                val weightData = weightDataJob.await()
+                val userData = userDataJob.await()
+                val todaysMeals = todaysMealsJob.await()
 
-            _uiState.update {
-                val updatedState = it.copy(
-                    weeklyCalories = weeklyData,
-                    weightHistory = weightData,
-                    listaComidas = todaysMeals,
-                    metaCalorias = userData?.metaCalorias ?: it.metaCalorias,
-                    metaProteinas = userData?.metaProteinas ?: it.metaProteinas,
-                    metaCarbos = userData?.metaCarbos ?: it.metaCarbos,
-                    metaGrasas = userData?.metaGrasas ?: it.metaGrasas
-                )
-                recalcularEstadoDerivado(updatedState)
+                _uiState.update {
+                    val updatedState = it.copy(
+                        weeklyCalories = weeklyData,
+                        weightHistory = weightData,
+                        listaComidas = todaysMeals,
+                        metaCalorias = userData?.metaCalorias ?: it.metaCalorias,
+                        metaProteinas = userData?.metaProteinas ?: it.metaProteinas,
+                        metaCarbos = userData?.metaCarbos ?: it.metaCarbos,
+                        metaGrasas = userData?.metaGrasas ?: it.metaGrasas
+                    )
+                    recalcularEstadoDerivado(updatedState)
+                }
+            } catch (e: Exception) {
+                Log.e("HomeViewModel", "Error loading initial data", e)
             }
         }
     }
 
     fun onFoodQueryChange(query: String) {
         _uiState.update { it.copy(foodQuery = query) }
+        
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(300L)
             if (query.length >= 2) {
-                _sugerencias.value = foodRepository.buscarSugerencias(query)
+                val resultados = foodRepository.buscarSugerencias(query)
+                _sugerencias.value = resultados
             } else {
                 _sugerencias.value = emptyList()
             }
@@ -123,10 +143,9 @@ class HomeViewModel @Inject constructor(
 
     fun onSuggestionClicked(alimento: Alimento) {
         _uiState.update { it.copy(foodQuery = alimento.nombre) }
-        onLimpiarSugerencias()
+        _sugerencias.value = emptyList()
     }
 
-    // Modificado para usar la misma lógica de guardado y actualización optimista
     fun onSaveCurrentFood() {
         if (!_uiState.value.isFoodFormValid) return
 
@@ -137,48 +156,57 @@ class HomeViewModel @Inject constructor(
 
             if (alimento != null) {
                 onGuardarComida(alimento, cantidad, state.foodMealType)
-                // Limpiar campos después de guardar
-                 _uiState.update { it.copy(foodQuery = "", foodQuantity = "") }
-            } else {
-                // TODO: Manejar error de alimento no encontrado
             }
         }
     }
-    
+
     fun onGuardarComida(alimento: Alimento, cantidad: Int, tipoComida: String) {
         val nuevaComida = ComidaAlacenada(
-            id = UUID.randomUUID().mostSignificantBits, // ID temporal
+            id = UUID.randomUUID().mostSignificantBits,
             alimento = alimento,
             cantidadEnGramos = cantidad,
             tipoDeComida = tipoComida
         )
 
-        viewModelScope.launch {
-            // Actualización optimista de la UI
-            _uiState.update {
-                recalcularEstadoDerivado(
-                    it.copy(
-                        listaComidas = it.listaComidas + nuevaComida,
-                        formularioComidaAbierto = false
-                    )
+        // Actualización optimista: Agregamos el item a la UI inmediatamente
+        _uiState.update {
+            recalcularEstadoDerivado(
+                it.copy(
+                    listaComidas = it.listaComidas + nuevaComida,
+                    formularioComidaAbierto = false,
+                    foodQuery = "",
+                    foodQuantity = ""
                 )
-            }
-            
-            // Intentar guardar en backend
-            val success = foodRepository.saveFoodInMeal(
+            )
+        }
+        _sugerencias.value = emptyList()
+
+        viewModelScope.launch {
+            val success = foodRepository.guardarAlimentoEnBackend(
                 userId = currentUserId,
                 alimento = alimento,
-                cantidad = cantidad,
+                cantidadIngresada = cantidad, // Asegúrate que el nombre del parámetro coincida con el Repo
                 tipoComida = tipoComida
             )
-            
+
             if (success) {
-                // Si tiene éxito, recargamos datos reales (opcional, para tener IDs correctos)
-                // loadInitialData() 
+                Log.d("HomeViewModel", "Guardado exitoso en backend")
+                // Opcional: Podrías recargar datos reales si quieres estar 100% sincronizado
+                // loadInitialData()
             } else {
-                // Si falla, podríamos revertir el cambio o mostrar un error
-                // Por ahora lo dejamos así para que la UI parezca rápida
+                // Rollback si falla: eliminamos el item que habíamos agregado visualmente
+                Log.e("HomeViewModel", "Fallo al guardar en backend. Revertiendo UI.")
+                _uiState.update { state ->
+                    val listaCorregida = state.listaComidas.filter { it.id != nuevaComida.id }
+                    recalcularEstadoDerivado(state.copy(listaComidas = listaCorregida))
+                }
             }
+        }
+    }
+    fun onBuscarEnApi(query: String) {
+        viewModelScope.launch {
+            val resultados = foodRepository.buscarEnApiExterna(query)
+            _sugerencias.value = resultados
         }
     }
 

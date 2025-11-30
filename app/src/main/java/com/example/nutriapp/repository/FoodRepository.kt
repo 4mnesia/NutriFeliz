@@ -1,7 +1,9 @@
 package com.example.nutriapp.repository
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
+
 import com.example.nutriapp.model.home.Alimento
 import com.example.nutriapp.model.home.ComidaAlacenada
 import com.example.nutriapp.model.toAlimento
@@ -19,18 +21,15 @@ class FoodRepository @Inject constructor(
     private val backendApiService: ApiService
 ) {
 
-    /**
-     * Busca un alimento. Primero intenta en el backend y si no, en la API externa.
-     */
     suspend fun buscarAlimento(query: String): Alimento? {
         return try {
             val response = backendApiService.buscarAlimentosEnBackend(query)
             response.embedded?.alimentos?.firstOrNull()?.let {
                 Alimento(id = it.id, nombre = it.nombre, caloriasPor100g = it.calorias, proteinasPor100g = it.proteinas, carbosPor100g = it.carbos, grasasPor100g = it.grasas)
-            } ?: buscarAlimentoExterno(query) // Fallback si el backend no devuelve nada
+            } ?: buscarAlimentoExterno(query)
         } catch (e: Exception) {
             e.printStackTrace()
-            buscarAlimentoExterno(query) // Fallback si el backend falla
+            buscarAlimentoExterno(query)
         }
     }
 
@@ -43,29 +42,21 @@ class FoodRepository @Inject constructor(
         }
     }
 
-    // --- ¡FUNCIÓN CORREGIDA! ---
-    /**
-     * Busca sugerencias de alimentos. Prioriza el backend y si no hay resultados, usa la API externa.
-     */
     suspend fun buscarSugerencias(query: String): List<Alimento> {
         return try {
-            // 1. Intentar buscar en nuestro backend primero.
             val backendResponse = backendApiService.buscarAlimentosEnBackend(query)
             val backendAlimentos = backendResponse.embedded?.alimentos?.map {
                 Alimento(id = it.id, nombre = it.nombre, caloriasPor100g = it.calorias, proteinasPor100g = it.proteinas, carbosPor100g = it.carbos, grasasPor100g = it.grasas)
             }
 
-            // 2. Si el backend devuelve resultados, los usamos.
             if (!backendAlimentos.isNullOrEmpty()) {
                 return backendAlimentos
             }
 
-            // 3. Si el backend no tiene resultados, hacemos fallback a la API externa.
             externalApiService.getFoodDetails(query).items.map { it.toAlimento() }
 
         } catch (e: Exception) {
             e.printStackTrace()
-            // Si todo falla, intentamos la API externa como último recurso.
             try {
                 externalApiService.getFoodDetails(query).items.map { it.toAlimento() }
             } catch (e2: Exception) {
@@ -75,10 +66,8 @@ class FoodRepository @Inject constructor(
         }
     }
 
-    // --- (El resto de las funciones no cambian) ---
-
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun getWeeklyCalories(userId: Long): Map<DayOfWeek, Int> {
+    suspend fun getWeeklyCalories(userId: Long?): Map<DayOfWeek, Int> {
         val weeklyCalories = mutableMapOf<DayOfWeek, Int>()
         DayOfWeek.values().forEach { day -> weeklyCalories[day] = 0 }
 
@@ -96,9 +85,9 @@ class FoodRepository @Inject constructor(
             weeklyCalories
         }
     }
-    
+
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun getTodaysMeals(userId: Long): List<ComidaAlacenada> {
+    suspend fun getTodaysMeals(userId: Long?): List<ComidaAlacenada> {
         val todaysMeals = mutableListOf<ComidaAlacenada>()
         val hoy = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
 
@@ -137,35 +126,102 @@ class FoodRepository @Inject constructor(
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    suspend fun saveFoodInMeal(
-        userId: Long,
+    suspend fun guardarAlimentoEnBackend(
+        userId: Long?,
         alimento: Alimento,
-        cantidad: Int,
+        cantidadIngresada: Int,
         tipoComida: String
     ): Boolean {
         return try {
-            val alimentoId = alimento.id ?: backendApiService.buscarAlimentosEnBackend(alimento.nombre)
-                .embedded?.alimentos?.firstOrNull()?.id ?: return false
+            // PASO 1: Obtener el ID del alimento en TU backend.
+            var alimentoIdFinal = alimento.id
 
-            val hoy = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
-            val comidasDeHoy = backendApiService.getComidasByUsuarioAndFecha(userId, hoy)
-            var comidaDeHoy = comidasDeHoy.embedded?.comidas?.firstOrNull { it.tipoDeComida.equals(tipoComida, ignoreCase = true) }
+            // Si el ID es null o 0, asumimos que es nuevo o externo.
+            if (alimentoIdFinal == null || alimentoIdFinal == 0L) {
+                try {
+                    // A. Intentamos buscarlo por nombre exacto para evitar duplicados
+                    val busqueda = backendApiService.buscarAlimentosEnBackend(alimento.nombre)
+                    val alimentoExistente = busqueda.embedded?.alimentos?.firstOrNull {
+                        it.nombre.equals(alimento.nombre, ignoreCase = true)
+                    }
 
-            if (comidaDeHoy == null) {
-                val createRequest = ComidaCreateRequest(tipoDeComida = tipoComida.uppercase(), fecha = hoy, usuario = UsuarioIdWrapper(id = userId))
-                comidaDeHoy = backendApiService.crearComida(createRequest)
+                    if (alimentoExistente != null) {
+                        alimentoIdFinal = alimentoExistente.id
+                    } else {
+                        // B. Si no existe, lo CREAMOS en tu backend
+                        val nuevoAlimentoRequest = AlimentoCreateRequest(
+                            nombre = alimento.nombre,
+                            calorias = alimento.caloriasPor100g,
+                            proteinas = alimento.proteinasPor100g,
+                            carbos = alimento.carbosPor100g,
+                            grasas = alimento.grasasPor100g
+                        )
+                        val alimentoCreado = backendApiService.crearAlimento(nuevoAlimentoRequest)
+                        alimentoIdFinal = alimentoCreado.id
+                    }
+                } catch (e: Exception) {
+                    Log.e("FoodRepository", "Error creando/buscando alimento: ${e.message}")
+                    return false // Si falla la gestión del alimento, no podemos seguir
+                }
             }
 
-            val addAlimentoRequest = ComidaAlimentoRequest(
-                comida = ComidaIdWrapper(id = comidaDeHoy.id),
-                alimento = AlimentoIdWrapper(id = alimentoId),
-                cantidadEnGramos = cantidad
+            // VALIDACIÓN DE SEGURIDAD: Si después de todo sigue siendo null, abortamos.
+            // Esto evita que la app explote en el Paso 3.
+            val finalId = alimentoIdFinal ?: run {
+                Log.e("FoodRepository", "Error: ID de alimento es null. No se puede guardar.")
+                return false
+            }
+
+            // PASO 2: Obtener o Crear la "Comida" (Cabecera: Desayuno/Almuerzo de hoy)
+            val hoy = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
+            val comidasResponse = backendApiService.getComidasByUsuarioAndFecha(userId, hoy)
+
+            // Buscamos si ya existe ese tiempo de comida (ej. DESAYUNO)
+            var comidaTarget = comidasResponse.embedded?.comidas?.find {
+                it.tipoDeComida.equals(tipoComida, ignoreCase = true)
+            }
+
+            if (comidaTarget == null) {
+                val nuevaComidaRequest = ComidaCreateRequest(
+                    tipoDeComida = tipoComida.uppercase(),
+                    fecha = hoy,
+                    usuario = UsuarioIdWrapper(id = userId)
+                )
+                comidaTarget = backendApiService.crearComida(nuevaComidaRequest)
+            }
+
+            // PASO 3: Crear la relación (Comida - Alimento)
+            // Usamos 'finalId' que ya sabemos que NO es nulo
+            val relacionRequest = ComidaAlimentoRequest(
+                comida = ComidaIdWrapper(id = comidaTarget.id),
+                alimento = AlimentoIdWrapper(id = finalId),
+                cantidadEnGramos = cantidadIngresada
             )
-            backendApiService.agregarAlimentoAComida(addAlimentoRequest)
+
+            backendApiService.agregarAlimentoAComida(relacionRequest)
+            Log.d("FoodRepository", "Alimento guardado correctamente en backend.")
             true
+
         } catch (e: Exception) {
+            Log.e("FoodRepository", "Excepción al guardar en backend: ${e.message}")
             e.printStackTrace()
             false
+        }
+    }
+
+    suspend fun buscarEnApiExterna(query: String): List<Alimento> {
+        return try {
+            // Llamamos al servicio configurado para la API externa (ej. CalorieNinjas)
+            val response = externalApiService.getFoodDetails(query)
+
+            // Mapeamos la respuesta (CNItem) a tu modelo de UI (Alimento)
+            // usando la función de extensión .toAlimento() que creamos antes
+            response.items.map { it.toAlimento() }
+
+        } catch (e: Exception) {
+            Log.e("FoodRepository", "Error buscando en API externa: ${e.message}")
+            // En caso de error, devolvemos una lista vacía para no romper la UI
+            emptyList()
         }
     }
 }

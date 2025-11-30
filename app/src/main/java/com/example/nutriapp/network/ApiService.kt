@@ -19,7 +19,7 @@ interface ApiService {
     // --- Endpoints de Comidas y Alimentos ---
     @GET("api/comidas/usuario/{usuarioId}/fecha/{fecha}")
     suspend fun getComidasByUsuarioAndFecha(
-        @Path("usuarioId") usuarioId: Long,
+        @Path("usuarioId") usuarioId: Long?,
         @Path("fecha") fecha: String
     ): HateoasComidaResponse
 
@@ -38,39 +38,44 @@ interface ApiService {
         @Query("nombre") query: String
     ): HateoasAlimentoResponse
 
+    @POST("api/alimentos")
+    suspend fun crearAlimento(@Body request: AlimentoCreateRequest): AlimentoDTO
+
     @POST("api/comidas")
     suspend fun crearComida(@Body request: ComidaCreateRequest): ComidaDTO
 
     @POST("api/comida-alimentos")
-    suspend fun agregarAlimentoAComida(@Body request: ComidaAlimentoRequest): ComidaAlimentoDTO
+    suspend fun agregarAlimentoAComida(
+        @Body request: ComidaAlimentoRequest
+    ): ComidaAlimentoDTO
 
     // --- Endpoint NUEVO para Resumen Semanal Eficiente ---
     @GET("api/registros-diarios/usuario/{usuarioId}/semana")
     suspend fun getRegistrosSemanales(
-        @Path("usuarioId") usuarioId: Long
+        @Path("usuarioId") usuarioId: Long?
     ): HateoasRegistroDiarioResponse
 
     // --- Endpoints para Historial de Peso ---
     @GET("api/usuarios/{usuarioId}/historial-peso")
     suspend fun getHistorialPeso(
-        @Path("usuarioId") usuarioId: Long
+        @Path("usuarioId") usuarioId: Long?
     ): HateoasHistorialPesoResponse
 
     @POST("api/usuarios/{usuarioId}/historial-peso")
     suspend fun addPesoEntry(
-        @Path("usuarioId") usuarioId: Long,
+        @Path("usuarioId") usuarioId: Long?,
         @Body request: NuevoPesoRequest
     ): HistorialPesoDTO
 
     // --- Endpoints para Usuario ---
     @GET("api/usuarios/{id}")
     suspend fun getUsuarioById(
-        @Path("id") userId: Long
+        @Path("id") userId: Long?
     ): UsuarioDTO
 
     @PUT("api/usuarios/{id}")
     suspend fun updateUsuario(
-        @Path("id") userId: Long,
+        @Path("id") userId: Long?,
         @Body request: UsuarioUpdateRequest
     ): UsuarioDTO
 }

@@ -23,7 +23,7 @@ class UserRepository @Inject constructor(
 ) {
 
     // ... (otras funciones como getWeightHistory, etc. no cambian)
-    suspend fun getWeightHistory(userId: Long): List<Float> {
+    suspend fun getWeightHistory(userId: Long?): List<Float> {
         return try {
             val response = backendApiService.getHistorialPeso(userId)
             response.embedded?.historial?.map { it.peso.toFloat() } ?: emptyList()
@@ -33,7 +33,7 @@ class UserRepository @Inject constructor(
         }
     }
 
-    suspend fun saveNewWeight(userId: Long, weight: Double): Boolean {
+    suspend fun saveNewWeight(userId: Long?, weight: Double): Boolean {
         return try {
             val request = NuevoPesoRequest(peso = weight)
             backendApiService.addPesoEntry(userId, request)
@@ -44,7 +44,7 @@ class UserRepository @Inject constructor(
         }
     }
 
-    suspend fun getUserData(userId: Long): UsuarioDTO? {
+    suspend fun getUserData(userId: Long?): UsuarioDTO? {
         return try {
             backendApiService.getUsuarioById(userId)
         } catch (e: Exception) {
@@ -53,7 +53,7 @@ class UserRepository @Inject constructor(
         }
     }
 
-    suspend fun updateUserGoals(userId: Long, calories: Int, protein: Int, carbs: Int, fat: Int): Boolean {
+    suspend fun updateUserGoals(userId: Long?, calories: Int, protein: Int, carbs: Int, fat: Int): Boolean {
         return try {
             val request = UsuarioUpdateRequest(metaCalorias = calories, metaProteinas = protein, metaCarbos = carbs, metaGrasas = fat)
             backendApiService.updateUsuario(userId, request)

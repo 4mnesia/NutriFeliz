@@ -80,8 +80,15 @@ data class RegistrationRequest(
     val email: String,
     val passwordHash: String
 )
+data class AlimentoCreateRequest(
+    val nombre: String,
+    @SerializedName("caloriasPor100g") val calorias: Int,
+    @SerializedName("proteinasPor100g") val proteinas: Float,
+    @SerializedName("carbosPor100g") val carbos: Float,
+    @SerializedName("grasasPor100g") val grasas: Float
+)
 
-data class UsuarioIdWrapper(val id: Long)
+data class UsuarioIdWrapper(val id: Long?)
 data class ComidaCreateRequest(
     val tipoDeComida: String,
     val fecha: String,
@@ -95,10 +102,6 @@ data class ComidaAlimentoRequest(
     val alimento: AlimentoIdWrapper,
     val cantidadEnGramos: Int
 )
-
-
-// --- HATEOAS Wrappers (para recibir listas) ---
-
 data class EmbeddedAlimentos(
     @SerializedName("alimentoDTOList") val alimentos: List<AlimentoDTO>?
 )

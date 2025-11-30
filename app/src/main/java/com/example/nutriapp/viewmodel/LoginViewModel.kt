@@ -2,6 +2,7 @@ package com.example.nutriapp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.nutriapp.data.SessionManager
 import com.example.nutriapp.network.UsuarioDTO // Importamos el DTO de red
 import com.example.nutriapp.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +26,8 @@ data class LoginUiState(
 
 @HiltViewModel
 open class LoginViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -47,12 +49,14 @@ open class LoginViewModel @Inject constructor(
     // La lógica ahora maneja el objeto UsuarioDTO que viene del repositorio.
     fun login() {
         viewModelScope.launch {
+
             _uiState.update { it.copy(loginStatus = LoginStatus.LOADING) }
             val state = _uiState.value
             try {
                 // userRepository.findUser ahora devuelve un UsuarioDTO?
                 val userDto = userRepository.findUser(state.usernameOrEmail, state.password)
                 if (userDto != null) {
+                    sessionManager.saveUserId(userDto.id)
                     _uiState.update { it.copy(loginStatus = LoginStatus.SUCCESS, loggedInUser = userDto) }
                 } else {
                     _uiState.update { it.copy(loginStatus = LoginStatus.ERROR) }
