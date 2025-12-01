@@ -2,6 +2,10 @@
 # NutriFeliz
 Es una aplicación nativa de Android diseñada para simplificar el seguimiento nutricional y conectar a los usuarios con sus planes de alimentación de manera intuitiva y amigable.
 
+<p align="center">
+  <img src="app/src/main/res/drawable/nutrialogo.png" alt="Logo NutriFeliz" width="150"/>
+</p>
+
 ## 🛠️ Tecnologías
 * 🅺 [Kotlin](https://kotlinlang.org/)
 * 🤖 [Android Studio](https://developer.android.com/studio?hl=es-419)
