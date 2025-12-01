@@ -26,7 +26,7 @@ Es una aplicación nativa de Android diseñada para simplificar el seguimiento n
 
 ### 2. Clonar el repositorio
 ```bash
-git clone [https://github.com/4mnesia/NutriFeliz.git](https://github.com/4mnesia/NutriFeliz.git)
+git clone https://github.com/4mnesia/NutriFeliz.git
 
 ```
 ### 3. Sincronización con Gradle
